@@ -29,6 +29,8 @@ public:
     static bool removeRecursively(const QString &itemPath);
     static bool copyRecursively(const QString &srcPath, const QString &tgtPath);
 
+    static qint64 getDirSize(const QString &path);
+
     static QString getMimeType(const QString &fileName);
     static bool openDetached(const QString &path);
 

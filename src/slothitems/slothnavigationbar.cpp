@@ -26,7 +26,7 @@ void ClickableLabel::enterEvent(QEvent *event) {
 
 void ClickableLabel::leaveEvent(QEvent *event) {
     if(effect) {
-        QTextDocument doc;
+        QTextDocument doc;          //for converting html to plain text
         doc.setHtml(this->text());
         this->setText(doc.toPlainText());
     }

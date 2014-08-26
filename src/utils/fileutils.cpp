@@ -148,35 +148,36 @@ bool FileUtils::moveToTrash(const QString &path) {
 }
 
 
-//http://john.nachtimwald.com/2010/06/08/qt-remove-directory-and-its-contents/
 //FIXME: if its too long, show progress bar etc.. use QThread
 bool FileUtils::removeRecursively(const QString &itemPath) {
     bool result = true;
+
     QFileInfo info(itemPath);
-
     if(info.isFile())
-        return QFile::remove(info.absoluteFilePath());
+        return QFile::remove(itemPath);
 
-    else if(info.isDir()) {
-        QDir dir(itemPath);
-
-        if (dir.exists(itemPath)) {
-            Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden  |
-                                                        QDir::AllDirs | QDir::Files, QDir::DirsFirst)) {
-                if (info.isDir()) {
-                    result = removeRecursively(info.absoluteFilePath());
-                }
-                else {
-                    result = QFile::remove(info.absoluteFilePath());
-                }
-
-                if (!result) {
-                    return result;
-                }
-            }
-            result = dir.rmdir(itemPath);
-        }
+    //firstly, delete files
+    QDirIterator iterator(itemPath, QDirIterator::Subdirectories);
+    while (iterator.hasNext()) {
+       iterator.next();
+       if (iterator.fileInfo().isFile()) {
+           result = QFile::remove(iterator.fileInfo().absoluteFilePath());
+       }
+       if(!result)
+           return result;
     }
+
+    //secondly, delete folders //FIXME: önce ilk katmana baktığı için silemiyor klasörlerin hepsini.
+    QDirIterator iteratorDirs(itemPath, QDirIterator::Subdirectories);
+    while (iteratorDirs.hasNext()) {
+       iteratorDirs.next();
+       QString dirName = iteratorDirs.fileInfo().fileName();
+       if (iteratorDirs.fileInfo().isDir() && dirName != "." && dirName != "..") {
+           result = QDir("/").rmdir(iteratorDirs.fileInfo().absoluteFilePath());
+       }
+    }
+
+    result = QDir("/").rmdir(itemPath);
 
     return result;
 }
@@ -219,6 +220,24 @@ bool FileUtils::copyRecursively(const QString &srcPath, const QString &tgtPath) 
         }
     }
     return result;
+}
+
+qint64 FileUtils::getDirSize(const QString &path) {
+    QFileInfo finfo(path);
+    if(!finfo.isDir())
+        return 0;
+
+    qint64 totalSize = 0;
+
+    QDirIterator iterator(path, QDirIterator::Subdirectories);
+    while (iterator.hasNext()) {
+       iterator.next();
+       if (iterator.fileInfo().isFile()) {
+
+           totalSize += iterator.fileInfo().size();
+       }
+    }
+    return totalSize;
 }
 
 QString FileUtils::getMimeType(const QString &fileName) {
@@ -273,9 +292,6 @@ bool FileUtils::openDetached(const QString &path) {
 }
 
 QString FileUtils::formatFileSize(const qint64 fileSize) {
-    if(fileSize < 0)
-        return "0 B";
-
     const int KB = 1024; // Kilobyte
     const int MB = 1024 * KB; // Megabyte
     const int GB = 1024 * MB; // Gigabyte

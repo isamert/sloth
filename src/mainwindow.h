@@ -5,6 +5,8 @@
 #include "slothitems/slothlistview.h"
 #include "slothitems/slothnavigationbar.h"
 #include "slothitems/slothtabwidget.h"
+#include "slothpanels/slothinfopanel.h"
+#include "slothpanels/slothplacespanel.h"
 #include "slothsettings.h"
 
 class MainWindow : public QMainWindow
@@ -30,11 +32,19 @@ private:
     QAction *actForward;
     QAction *actChangeModel;
 
+    //Panels:
+    QDockWidget *dockRight;
+    SlothInfoPanel *pnlInfo;
+
+    QDockWidget *dockLeft;
+    SlothPlacesPanel *pnlPlaces;
+
 
     //ui:
     void loadWindow();
     void loadToolbar();
     void loadTab();
+    void loadPanels();
 
 public:
     MainWindow(QWidget *parent = 0);
@@ -55,6 +65,8 @@ private slots:
 
     //other:
     void openDir(const QString &path);
+    QString getCurrentDir();
+    QString getCurrentIndexFile();
     void changeModel();
 
     void addTab(const QString &path = QDir::homePath());

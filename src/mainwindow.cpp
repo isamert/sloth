@@ -6,8 +6,11 @@ MainWindow::MainWindow(QWidget *parent)
     this->loadWindow();
     this->loadTab();
     this->loadToolbar();
+    this->loadPanels();
 
     this->addTab();
+
+    qDebug() << FileUtils::formatFileSize(FileUtils::getDirSize("/home/isa"));
 }
 
 MainWindow::~MainWindow() {}
@@ -48,13 +51,27 @@ void MainWindow::loadToolbar() {
 
     this->toolbar->addSeparator();
 
-    this->navbar = new SlothNavigationBar(this->toolbar, QDir::homePath(), true);
+    this->navbar = new SlothNavigationBar(this->toolbar, QDir::homePath(), false);
     this->toolbar->addWidget(this->navbar);
 
     connect(this->actBack, SIGNAL(triggered()), this, SLOT(goBack()));
     connect(this->actForward, SIGNAL(triggered()), this, SLOT(goForward()));
     connect(this->navbar, SIGNAL(barItemClicked(QString)), this, SLOT(openDir(QString)));
     connect(this->toolbar, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(handleCustomContextMenu(QPoint)));
+}
+
+void MainWindow::loadPanels() {
+    this->dockRight = new QDockWidget(trUtf8("Info"), this);
+    this->addDockWidget(Qt::RightDockWidgetArea, this->dockRight);
+
+    this->pnlInfo = new SlothInfoPanel(this->dockRight);
+    this->dockRight->setWidget(this->pnlInfo);
+
+    this->dockLeft = new QDockWidget(trUtf8("Places"), this);
+    this->addDockWidget(Qt::LeftDockWidgetArea, this->dockLeft);
+
+    this->pnlPlaces = new SlothPlacesPanel(this->dockLeft);
+    this->dockLeft->setWidget(this->pnlPlaces);
 }
 
 void MainWindow::loadTab() {
@@ -73,6 +90,15 @@ void MainWindow::goForward() {
 
 void MainWindow::openDir(const QString &path) {
     dynamic_cast<SlothListView*>(this->tabWidget->currentWidget())->openDir(path);
+}
+
+QString MainWindow::getCurrentDir() {
+    return dynamic_cast<SlothListView*>(this->tabWidget->currentWidget())->getCurrentDir();
+}
+
+QString MainWindow::getCurrentIndexFile() {
+    QString fileName = dynamic_cast<SlothListView*>(this->tabWidget->currentWidget())->selectionModel()->currentIndex().data().toString();
+    return FileUtils::combine(this->getCurrentDir(), fileName);
 }
 
 void MainWindow::changeModel() {
@@ -97,11 +123,17 @@ void MainWindow::addTab(const QString &path /* = QDir::homePath() */) {
 void MainWindow::handleCurrentPathChange(const QString &path) {
     this->navbar->setPath(path);
     this->tabWidget->setTabText(this->tabWidget->currentIndex(), QDir(path).dirName());
+
+    //PANEL:
+    this->pnlInfo->setInfo(path);
 }
 
 void MainWindow::handleCurrentTabChange(int index) {
     QString currPath = dynamic_cast<SlothListView*>(this->tabWidget->widget(index))->getCurrentDir();
     this->navbar->setPath(currPath);
+
+    //PANEL:
+    this->pnlInfo->setInfo(currPath);
 }
 
 void MainWindow::handleNewTabRequest(const QString &path) {
@@ -122,6 +154,12 @@ void MainWindow::closeCurrentTab() {
 
 void MainWindow::handleStatusChange(const QString &status) {
     this->statusBar()->showMessage(status);
+
+    //PANEL:
+    if(status == "") //nothing selected
+        this->pnlInfo->setInfo(this->getCurrentDir());
+    else
+        this->pnlInfo->setInfo(this->getCurrentIndexFile());
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {

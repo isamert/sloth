@@ -7,7 +7,7 @@
 #include "utils/fileutils.h"
 #include "utils/clipboard.h"
 #include "slothsettings.h"
-
+#include "slothpanels/slothinfopanel.h"
 
 class SlothListView : public QListView
 {
@@ -34,7 +34,11 @@ public:
     void loadActions();
     void loadNewFileMenu(const QString &tempDir, QMenu *menu);
 
+    SlothInfoPanel *infoDialog;
+
     QMenu *menuNewFile;
+    QSignalMapper *newFileMapper;
+
     QAction *actEmptyFile;
     QAction *actNewFolder;
     QAction *actOpenInNewTab;
@@ -73,6 +77,8 @@ private slots:
     void newEmptyFile();
     void newFolder();
     void paste();
+
+    void newFileMenuItemClicked(const QString &path);
 
 signals:
     void currentPathChanged(const QString &currentPath);

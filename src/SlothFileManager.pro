@@ -25,7 +25,10 @@ SOURCES += main.cpp\
     slothsettings.cpp \
     slothitems/slothtabwidget.cpp \
     slothitems/slothnavigationbar.cpp \
-    utils/clipboard.cpp
+    utils/clipboard.cpp \
+    slothaboutdialog.cpp \
+    slothpanels/slothinfopanel.cpp \
+    slothpanels/slothplacespanel.cpp
 
 HEADERS  += mainwindow.h \
     utils/quick.h \
@@ -39,8 +42,13 @@ HEADERS  += mainwindow.h \
     slothsettings.h \
     slothitems/slothtabwidget.h \
     slothitems/slothnavigationbar.h \
-    utils/clipboard.h
+    utils/clipboard.h \
+    slothaboutdialog.h \
+    slothpanels/slothinfopanel.h \
+    slothpanels/slothplacespanel.h
 
 FORMS += \
-    compression/compressiondialog.ui
+    compression/compressiondialog.ui \
+    slothaboutdialog.ui \
+    slothpanels/slothinfopanel.ui
 

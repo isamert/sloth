@@ -37,6 +37,9 @@ void SlothListView::loadSettings() {
 void SlothListView::loadActions() {
     this->menuNewFile = new QMenu(this);
     this->menuNewFile->setTitle(trUtf8("New file"));
+    this->newFileMapper = new QSignalMapper(this);
+    connect(this->newFileMapper, SIGNAL(mapped(const QString &)), this,
+            SLOT(newFileMenuItemClicked(const QString &)));
 
     this->actEmptyFile = new QAction(this);
     this->actEmptyFile->setText(trUtf8("Empty File"));
@@ -78,7 +81,6 @@ void SlothListView::loadActions() {
 }
 
 void SlothListView::loadNewFileMenu(const QString &tempDir, QMenu *menu) {
-    //TODO:connect to copier void
     QDir dir(tempDir);
 
     foreach(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllDirs |
@@ -89,10 +91,20 @@ void SlothListView::loadNewFileMenu(const QString &tempDir, QMenu *menu) {
         }
         else if(info.isFile()) {
             QIcon icon = this->fsm->iconProvider()->icon(info);
-            menu->addAction(icon, info.baseName())->setToolTip(info.absoluteFilePath());
+            QAction *act = menu->addAction(icon, info.baseName());
+            connect(act, SIGNAL(triggered()), this->newFileMapper, SLOT(map()));
+            act->setToolTip(info.absoluteFilePath());
+
+            this->newFileMapper->setMapping(act, info.absoluteFilePath());
         }
 
     }
+}
+
+void SlothListView::newFileMenuItemClicked(const QString &path) {
+    QString newPath = FileUtils::combine(this->getCurrentDir(), FileUtils::getName(path));
+    if(!QFile::copy(path, newPath))
+        Quick::msgWarning(trUtf8("Error"), trUtf8("Can not create new file from template."));
 }
 
 void SlothListView::openDir(QString dir, bool addHistory /* =true */) {
@@ -176,9 +188,6 @@ void SlothListView::onCurrentIndexChange(const QModelIndex &current, const QMode
 }
 
 void SlothListView::onSelectionChange(const QItemSelection &selected, const QItemSelection &deselected) {
-    //QItemSelection doesnt return exact numbers sometimes
-    //FIXME: when makin multiple selections, its going crazy
-
     QStringList mlist = this->getCurrentSelectedPaths();
     QString status = "";
 
@@ -187,15 +196,16 @@ void SlothListView::onSelectionChange(const QItemSelection &selected, const QIte
         return;
     }
 
-    qint64 totalSize;
-    int totalCount;
+    qint64 totalSize = 0;
+    int totalCount = 0;
     int totalFile = 0;
     int totalDir = 0;
 
     foreach (QString index, mlist) {
         QFileInfo info(index);
+
         if(info.isFile()) {
-            totalSize += QFile(info.absoluteFilePath()).size();
+            totalSize += info.size();
             totalFile += 1;
         }
         else if(info.isDir()) {
@@ -203,9 +213,6 @@ void SlothListView::onSelectionChange(const QItemSelection &selected, const QIte
             totalCount += QDir(info.absoluteFilePath()).entryList().count() - 2;
         }
     }
-
-    if(totalCount < 0)
-        totalCount = 0; //handle file count error
 
     status = QString(trUtf8("%1 dirs (Contains %2 items), %3 files (%4)"))
              .arg(totalDir).arg(totalCount).arg(totalFile).arg(FileUtils::formatFileSize(totalSize));
@@ -380,7 +387,9 @@ void SlothListView::sendTo() {
 }
 
 void SlothListView::properties() {
-    qDebug() << "AAAA";
+    this->infoDialog = new SlothInfoPanel();
+    this->infoDialog->setInfo(this->getCurrentSelectedPaths());
+    this->infoDialog->show();
 }
 
 void SlothListView::newEmptyFile() {
