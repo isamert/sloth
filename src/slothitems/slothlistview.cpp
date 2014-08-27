@@ -21,7 +21,6 @@ void SlothListView::loadSettings() {
     //this:
     SlothSettings::loadListViewValues(this);
     this->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    this->setEditTriggers(QAbstractItemView::EditKeyPressed | QAbstractItemView::SelectedClicked);
     this->setContextMenuPolicy(Qt::CustomContextMenu);
     this->setUniformItemSizes(true);
     this->setResizeMode(QListView::Adjust);
@@ -61,6 +60,7 @@ void SlothListView::loadActions() {
 
     this->actMoveToTrash = new QAction(trUtf8("Move to trash"), this);
     this->actCompress = new QAction(trUtf8("Compress"), this);
+    this->actExtract = new QAction(trUtf8("Extract here"), this);
     this->actSendTo = new QAction(trUtf8("Send to..."), this);
     this->actProperties = new QAction(trUtf8("Properties"), this);
 
@@ -72,6 +72,7 @@ void SlothListView::loadActions() {
     connect(this->actDelete, SIGNAL(triggered()), this, SLOT(deletePermanently()));
     connect(this->actShowHidden, SIGNAL(triggered(bool)), this, SLOT(setShowHidden(bool)));
     connect(this->actCompress, SIGNAL(triggered()), this, SLOT(compress()));
+    connect(this->actExtract, SIGNAL(triggered()), this, SLOT(extract()));
     connect(this->actSendTo, SIGNAL(triggered()), this, SLOT(sendTo()));
     connect(this->actProperties, SIGNAL(triggered()), this, SLOT(properties()));
 
@@ -85,7 +86,6 @@ void SlothListView::loadNewFileMenu(const QString &tempDir, QMenu *menu) {
 
     foreach(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllDirs |
                                               QDir::Files, QDir::DirsFirst)) {
-        qDebug() << info.absoluteFilePath();
         if(info.isDir()) {
             this->loadNewFileMenu(info.absoluteFilePath(), this->menuNewFile->addMenu(info.fileName()));
         }
@@ -131,13 +131,18 @@ QString SlothListView::getCurrentTabName() {
     return FileUtils::getName(this->fsm->rootPath());
 }
 
+QString SlothListView::getCurrentSelectedPath() {
+    QModelIndex index = this->selectionModel()->currentIndex();
+    return this->fsm->fileInfo(index).absoluteFilePath();
+}
+
 QStringList SlothListView::getCurrentSelectedPaths() {
     QStringList list;
     QModelIndexList indexes = this->selectionModel()->selectedIndexes();
     foreach(QModelIndex index, indexes) {
         list << FileUtils::combine(this->fsm->rootPath(), index.data(Qt::DisplayRole).toString());
         //list << this->fsm->fileInfo(index).absoluteFilePath().toUtf8();
-        //WTF: //FIXME: this commented code has problems with utf-8 chars, but only here
+        //WTF: //FIXME:? this commented code has problems with utf-8 chars, but only here
     }
     return list;
 }
@@ -288,6 +293,7 @@ void SlothListView::onCustomContextMenu(const QPoint &point) {
     if (index.isValid()) { //when clicked on items
         //FIXME:
         QFileInfo info(this->fsm->fileInfo(index).absoluteFilePath());
+        QString mime = FileUtils::getMimeType(info.absoluteFilePath());
         QMenu menu;
 
         if(info.isDir()) {
@@ -315,6 +321,8 @@ void SlothListView::onCustomContextMenu(const QPoint &point) {
             menu.addAction(this->actMoveToTrash);
             menu.addAction(this->actDelete);
             menu.addSeparator();
+            if(Utils::mimeTypesOfArchives().contains(mime))
+                menu.addAction(this->actExtract);
             menu.addAction(this->actCompress);
             menu.addAction(this->actSendTo);
             menu.addSeparator();
@@ -340,7 +348,8 @@ void SlothListView::openInNewTab() {
 }
 
 void SlothListView::cut() {
-    qDebug() << "AAAA";
+    this->copy();
+    //TODO:write to temp file
 }
 
 void SlothListView::copy() {
@@ -382,13 +391,19 @@ void SlothListView::compress() {
     this->compDialog->show();
 }
 
+void SlothListView::extract() {
+    Compression comp;
+    comp.extract(this->getCurrentSelectedPath(), this->getCurrentDir());
+}
+
 void SlothListView::sendTo() {
-    qDebug() << "AAAA";
+    //TODO:
 }
 
 void SlothListView::properties() {
     this->infoDialog = new SlothInfoPanel();
-    this->infoDialog->setInfo(this->getCurrentSelectedPaths());
+    this->infoDialog->setInfo(this->getCurrentSelectedPaths(), true);
+    this->infoDialog->move(SlothSettings::getDefaultPosition());
     this->infoDialog->show();
 }
 

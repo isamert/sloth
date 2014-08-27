@@ -16,6 +16,7 @@ class MainWindow : public QMainWindow
 private:
     QWidget *mainWidget;
     QGridLayout *gridLayout;
+
     //Settings
     SlothSettings *settings;
 
@@ -25,8 +26,9 @@ private:
     //NavigationBar:
     SlothNavigationBar *navbar;
 
-    //Toolbar items:
+    //items:
     QToolBar *toolbar;
+    QMenuBar *menubar;
     QStatusBar *statusbar;
     QAction *actBack;
     QAction *actForward;
@@ -42,6 +44,7 @@ private:
 
     //ui:
     void loadWindow();
+    void loadMenuBar();
     void loadToolbar();
     void loadTab();
     void loadPanels();
@@ -49,6 +52,8 @@ private:
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    SlothListView *currentListView();
 
 private slots:
     //toolbar:

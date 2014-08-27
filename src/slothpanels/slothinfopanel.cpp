@@ -19,13 +19,13 @@ SlothInfoPanel::~SlothInfoPanel()
     delete ui;
 }
 
-void SlothInfoPanel::setInfo(const QString &path) {
-    this->setInfo(QFileInfo(path));
+void SlothInfoPanel::setInfo(const QString &path, bool showDirSize /* = false */) {
+    this->setInfo(QFileInfo(path), showDirSize);
 }
 
-void SlothInfoPanel::setInfo(const QStringList &paths) {
+void SlothInfoPanel::setInfo(const QStringList &paths, bool showDirSize /* = false */) {
     if(paths.count() == 1) {
-        this->setInfo(paths[0]);
+        this->setInfo(paths[0], true);
         return;
     }
 
@@ -43,13 +43,14 @@ void SlothInfoPanel::setInfo(const QStringList &paths) {
             totalCount += 1;
         }
         else if(info.isDir()) {
-            totalSize += FileUtils::getDirSize(info.absoluteFilePath());
+            if(showDirSize)
+                totalSize += FileUtils::getDirSize(info.absoluteFilePath());
             totalDir += 1;
             totalCount += QDir(info.absoluteFilePath()).entryList().count() - 2;
         }
     }
 
-    ui->lblImage->setPixmap(QIcon("dir").pixmap(128, 128));
+    ui->lblImage->setPixmap(QIcon("directory").pixmap(128, 128));
 
     ui->lblFileName->setText(QString("%1 Dirs, %2 files (Total %3 files)")
                              .arg(totalDir).arg(totalFile).arg(totalCount));
@@ -58,7 +59,7 @@ void SlothInfoPanel::setInfo(const QStringList &paths) {
     ui->lblType->setText("-");
 }
 
-void SlothInfoPanel::setInfo(const QFileInfo &info) {
+void SlothInfoPanel::setInfo(const QFileInfo &info, bool showDirSize /* = false */) {
     this->filePath = info.absoluteFilePath();
 
     QFileIconProvider iconProv;
@@ -81,8 +82,13 @@ void SlothInfoPanel::setInfo(const QFileInfo &info) {
     ui->lblImage->setPixmap(pixmap);
 
     ui->lblFileName->setText(info.fileName());
-    ui->lblModified->setText(info.lastModified().toString());
-    ui->lblSize->setText(FileUtils::formatFileSize(info.size()));
+    ui->lblModified->setText(info.lastModified().toString(Qt::DefaultLocaleShortDate));
+    if(showDirSize && info.isDir())
+        ui->lblSize->setText(FileUtils::formatFileSize(
+                             FileUtils::getDirSize(info.absoluteFilePath())));
+    else
+        ui->lblSize->setText(FileUtils::formatFileSize(info.size()));
+
     ui->lblType->setText(mime);
 
     this->loadPermissions();

@@ -1,7 +1,14 @@
 #ifndef SLOTHNAVIGATIONBAR_H
 #define SLOTHNAVIGATIONBAR_H
 
+#include "qglobal.h"
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#else
+#include <QtGui>
+#endif
+
 #include "slothitems/slothplacesbox.h"
 #include "utils/quick.h"
 #include "utils/fileutils.h"

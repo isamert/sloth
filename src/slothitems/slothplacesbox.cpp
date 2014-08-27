@@ -69,9 +69,7 @@ QString SlothPlacesBox::getDesktopLocation()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     return QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-#endif
-
-#if QT_VERSION <= QT_VERSION_CHECK(5, 0, 0)
+#else
     return QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
 #endif
 }
@@ -80,9 +78,7 @@ QString SlothPlacesBox::getDocumentsLocationn()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-#endif
-
-#if QT_VERSION <= QT_VERSION_CHECK(5, 0, 0)
+#else
     return QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
 #endif
 }
@@ -91,10 +87,8 @@ QString SlothPlacesBox::getDownloadLocation()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     return QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-#endif
-
-#if QT_VERSION <= QT_VERSION_CHECK(5, 0, 0)
-    return this->getFromXDG("DOWNLOADS");
+#else
+    return getFromXDG("DOWNLOADS");
 #endif
 }
 
@@ -102,9 +96,7 @@ QString SlothPlacesBox::getMoviesLocation()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     return QStandardPaths::writableLocation(QStandardPaths::MoviesLocation);
-#endif
-
-#if QT_VERSION <= QT_VERSION_CHECK(5, 0, 0)
+#else
     return QDesktopServices::storageLocation(QDesktopServices::MoviesLocation);
 #endif
 }
@@ -113,9 +105,7 @@ QString SlothPlacesBox::getPicturesLocation()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     return QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
-#endif
-
-#if QT_VERSION <= QT_VERSION_CHECK(5, 0, 0)
+#else
     return QDesktopServices::storageLocation(QDesktopServices::PicturesLocation);
 #endif
 }
@@ -124,10 +114,8 @@ QStringList SlothPlacesBox::getApplicationsLocation()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     return QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
-#endif
-
-#if QT_VERSION <= QT_VERSION_CHECK(5, 0, 0)
-    return QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+#else
+    return QStringList(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation));
 #endif
 }
 

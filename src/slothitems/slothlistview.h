@@ -1,7 +1,13 @@
 #ifndef SLOTHLISTVIEW_H
 #define SLOTHLISTVIEW_H
 
+#include "qglobal.h"
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#else
+#include <QtGui>
+#endif
 
 #include "compression/compressiondialog.h"
 #include "utils/fileutils.h"
@@ -25,6 +31,7 @@ public:
 
     QString getCurrentDir();
     QString getCurrentTabName();
+    QString getCurrentSelectedPath();
     QStringList getCurrentSelectedPaths();
     void openDir(QString dir, bool addHistory = true);
     bool goBack();
@@ -51,6 +58,8 @@ public:
     QAction *actMoveToTrash;
     QAction *actRename;
     QAction *actCompress;
+    QAction *actExtract;
+    QAction *actOpenTerminalHere;
     QAction *actProperties;
 
     CompressionDialog *compDialog;
@@ -71,6 +80,7 @@ private slots:
     void moveToTrash();
     void deletePermanently();
     void compress();
+    void extract();
     void sendTo();
     void properties();
 

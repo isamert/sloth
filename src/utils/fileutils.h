@@ -1,13 +1,16 @@
 #ifndef FILEUTILS_H
 #define FILEUTILS_H
 
+#include "qglobal.h"
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
-
-#include "utils/quick.h"
-
-#if QT_VERSION <= QT_VERSION_CHECK(5, 0, 0)
+#else
+#include <QtGui>
 #include <magic.h>
 #endif
+
+#include "utils/quick.h"
 
 class FileUtils
 {

@@ -1,7 +1,13 @@
 #ifndef CLIPBOARD_H
 #define CLIPBOARD_H
 
+#include "qglobal.h"
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#else
+#include <QtGui>
+#endif
 
 #include "utils/quick.h"
 #include "utils/fileutils.h"

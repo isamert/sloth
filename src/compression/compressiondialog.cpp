@@ -47,7 +47,12 @@ void CompressionDialog::setItems(const QStringList &list) {
 }
 
 void CompressionDialog::on_btnCreate_clicked() {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     QString cFile = FileUtils::combine(this->comboPath->currentData().toString(), ui->lineFileName->text());
+#else
+    QString cFile = FileUtils::combine(this->comboPath->itemData(this->comboPath->currentIndex()).toString(), ui->lineFileName->text());
+#endif
+
     QString suffix = ui->comboFileType->currentText();
     cFile.append(suffix);
 

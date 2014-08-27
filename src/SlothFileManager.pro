@@ -5,7 +5,9 @@
 #-------------------------------------------------
 
 QT       += core gui
+LIBS     += -lmagic
 
+greaterThan(QT_MAJOR_VERSION, 4): LIBS -= -lmagic
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = SlothFileManager

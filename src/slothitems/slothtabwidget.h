@@ -1,7 +1,13 @@
 #ifndef SLOTHTABWIDGET_H
 #define SLOTHTABWIDGET_H
 
+#include "qglobal.h"
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtWidgets>
+#else
+#include <QtGui>
+#endif
 
 class SlothTabWidget : public QTabWidget
 {

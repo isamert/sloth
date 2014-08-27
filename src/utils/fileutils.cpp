@@ -157,7 +157,8 @@ bool FileUtils::removeRecursively(const QString &itemPath) {
         return QFile::remove(itemPath);
 
     //firstly, delete files
-    QDirIterator iterator(itemPath, QDirIterator::Subdirectories);
+    QDirIterator iterator(itemPath, QDir::Hidden | QDir::AllDirs | QDir::AllEntries | QDir::System,
+                                    QDirIterator::Subdirectories);
     while (iterator.hasNext()) {
        iterator.next();
        if (iterator.fileInfo().isFile()) {
@@ -167,17 +168,18 @@ bool FileUtils::removeRecursively(const QString &itemPath) {
            return result;
     }
 
-    //secondly, delete folders //FIXME: önce ilk katmana baktığı için silemiyor klasörlerin hepsini.
-    QDirIterator iteratorDirs(itemPath, QDirIterator::Subdirectories);
-    while (iteratorDirs.hasNext()) {
-       iteratorDirs.next();
-       QString dirName = iteratorDirs.fileInfo().fileName();
-       if (iteratorDirs.fileInfo().isDir() && dirName != "." && dirName != "..") {
-           result = QDir("/").rmdir(iteratorDirs.fileInfo().absoluteFilePath());
-       }
+    //secondly, delete folders
+    while(QFile::exists(itemPath)) {
+        QDirIterator iteratorDirs(itemPath, QDir::Hidden | QDir::AllDirs, QDirIterator::Subdirectories);
+        while (iteratorDirs.hasNext()) {
+           iteratorDirs.next();
+           QString dirName = iteratorDirs.fileInfo().fileName();
+           if (iteratorDirs.fileInfo().isDir() /* && dirName != "." */ && dirName != "..") {
+               qDebug() << iteratorDirs.fileInfo().absoluteFilePath();
+               result = QDir("/").rmdir(iteratorDirs.fileInfo().absoluteFilePath());
+           }
+        }
     }
-
-    result = QDir("/").rmdir(itemPath);
 
     return result;
 }
@@ -245,7 +247,6 @@ QString FileUtils::getMimeType(const QString &fileName) {
     QMimeDatabase db;
     QMimeType type = db.mimeTypeForFile(fileName);
     return type.name();
-
 #else
 //http://va-sorokin.blogspot.com.tr/2011/03/how-to-get-mime-type-on-nix-system.html
     QString result("application/octet-stream");

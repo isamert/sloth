@@ -28,8 +28,8 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
-           <height>20</height>
+           <width>5</width>
+           <height>5</height>
           </size>
          </property>
         </spacer>
@@ -69,8 +69,8 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
-           <height>20</height>
+           <width>5</width>
+           <height>5</height>
           </size>
          </property>
         </spacer>
@@ -86,8 +86,8 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
-           <height>20</height>
+           <width>5</width>
+           <height>5</height>
           </size>
          </property>
         </spacer>
@@ -121,8 +121,8 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
-           <height>20</height>
+           <width>5</width>
+           <height>5</height>
           </size>
          </property>
         </spacer>
@@ -258,6 +258,12 @@
      </item>
      <item row="1" column="3">
       <widget class="QCheckBox" name="cOwnerX">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="toolTip">
         <string>Owner</string>
        </property>
