@@ -32,6 +32,7 @@ private:
     QStatusBar *statusbar;
     QAction *actBack;
     QAction *actForward;
+    QAction *actUp;
     QAction *actChangeModel;
 
     //Panels:
@@ -59,6 +60,7 @@ private slots:
     //toolbar:
     void goBack();
     void goForward();
+    void goUp();
 
     //update:
     void handleCurrentPathChange(const QString &path);

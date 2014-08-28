@@ -36,6 +36,7 @@ public:
     void openDir(QString dir, bool addHistory = true);
     bool goBack();
     bool goForward();
+    void goUp();
 
     void loadSettings();
     void loadActions();

@@ -21,6 +21,7 @@ public:
     static QString join(const QStringList &list);
     static QString combine(const QString &path1, const QString &path2);
     static QString getName(const QString &path);
+    static QString getNameWithoutPrefix(const QString &path);
     static QString getUpperPath(const QString &path);
     static QString getFileNameDoesNotExists(const QString &fullFilePath, const QString &joinString,
                                             int i = 1, bool getFullPath = false);

@@ -42,11 +42,15 @@ void MainWindow::loadToolbar() {
 
     this->actBack = new QAction(this->toolbar);
     this->actForward = new QAction(this->toolbar);
+    this->actUp = new QAction(this->toolbar);
+
     this->actBack->setIcon(Quick::getIcon("back"));
     this->actForward->setIcon(Quick::getIcon("forward"));
+    this->actUp->setIcon(Quick::getIcon("up"));
 
     this->toolbar->addAction(this->actBack);
     this->toolbar->addAction(this->actForward);
+    this->toolbar->addAction(this->actUp);
 
     this->toolbar->addSeparator();
 
@@ -55,6 +59,7 @@ void MainWindow::loadToolbar() {
 
     connect(this->actBack, SIGNAL(triggered()), this, SLOT(goBack()));
     connect(this->actForward, SIGNAL(triggered()), this, SLOT(goForward()));
+    connect(this->actUp, SIGNAL(triggered()), this, SLOT(goUp()));
     connect(this->navbar, SIGNAL(barItemClicked(QString)), this, SLOT(openDir(QString)));
     connect(this->toolbar, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(handleCustomContextMenu(QPoint)));
 }
@@ -66,7 +71,6 @@ void MainWindow::loadMenuBar() {
 
 void MainWindow::loadPanels() {
     this->dockLeft = new QDockWidget(trUtf8("Places"), this);
-
     this->addDockWidget(Qt::RightDockWidgetArea, this->dockLeft);
 
     this->pnlPlaces = new SlothPlacesPanel(this->dockLeft);
@@ -77,6 +81,10 @@ void MainWindow::loadPanels() {
 
     this->pnlInfo = new SlothInfoPanel(this->dockRight);
     this->dockRight->setWidget(this->pnlInfo);
+
+    this->tabifyDockWidget(this->dockRight, this->dockLeft);
+
+    connect(this->pnlPlaces, SIGNAL(itemClicked(QString)), this, SLOT(openDir(QString)));
 }
 
 void MainWindow::loadTab() {
@@ -95,6 +103,10 @@ void MainWindow::goBack() {
 
 void MainWindow::goForward() {
     this->currentListView()->goForward();
+}
+
+void MainWindow::goUp() {
+    this->currentListView()->goUp();
 }
 
 void MainWindow::openDir(const QString &path) {
@@ -133,10 +145,11 @@ void MainWindow::handleCurrentPathChange(const QString &path) {
     this->tabWidget->setTabText(this->tabWidget->currentIndex(), QDir(path).dirName());
     this->navbar->setPath(path);
     this->pnlInfo->setInfo(path);
+    this->pnlPlaces->setCurrentItem(path);
 }
 
 void MainWindow::handleCurrentTabChange(int index) {
-    QString currPath = dynamic_cast<SlothListView*>(this->tabWidget->widget(index))->getCurrentDir();
+    QString currPath = this->currentListView()->getCurrentDir();
     this->navbar->setPath(currPath);
     this->pnlInfo->setInfo(currPath);
 }

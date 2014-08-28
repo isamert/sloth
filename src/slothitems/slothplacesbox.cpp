@@ -83,6 +83,15 @@ QString SlothPlacesBox::getDocumentsLocationn()
 #endif
 }
 
+QString SlothPlacesBox::getMusicLocation()
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    return QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
+#else
+    return QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
+#endif
+}
+
 QString SlothPlacesBox::getDownloadLocation()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)

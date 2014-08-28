@@ -23,6 +23,7 @@ public:
 
 signals:
     void clicked();
+    void clicked(QPoint &point);
 
 public slots:
 
@@ -43,6 +44,8 @@ private:
     QSignalMapper *signalMapper;
     QLineEdit *linePath;
     QCompleter *completer;
+
+    QString lastCopyItem;
 
     bool useLineModel;
 
@@ -65,6 +68,8 @@ public slots:
 private slots:
     void openClickedDir(const QString &path);
     void openFromLineEdit();
+    void showMenu(const QPoint &pos);
+    void copyPathToClipboard();
 
 
 

@@ -9,8 +9,11 @@
 #include <QtGui>
 #endif
 
+#include "slothitems/slothplacesbox.h"
+
 class SlothSettings
 {
+
 public:
     SlothSettings();
 
@@ -21,8 +24,12 @@ public:
     static void loadListViewValues(QListView *view);
     static void saveListViewValues(QListView *view);
 
-    static QSize getDefaultSize();
-    static QPoint getDefaultPosition();
+    static QSize defaultSize();
+    static QPoint defaultPosition();
+
+    static QStringList defaultPlaces();
+    static QStringList getPlaces();
+    static void setPlaces(const QStringList &list);
 };
 
 #endif // SLOTHSETTINGS_H

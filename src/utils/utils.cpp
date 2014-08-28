@@ -15,6 +15,6 @@ QStringList Utils::mimeTypesOfArchives() {
     list << "application/x-tar" << "application/x-gzip" << "application/x-bzip" << "application/x-bzip2" <<
             "application/x-7z-compressed" << "application/zip" << "application/x-iso9660-image" <<
             "application/x-rar-compressed" << "application/x-rpm" << "application/vnd.debian.binary-package" <<
-            "application/x-lzma";
+            "application/x-lzma" << "application/x-cd-image";
     return list;
 }

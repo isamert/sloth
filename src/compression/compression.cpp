@@ -58,9 +58,12 @@ bool Compression::compressWithRar(const QStringList &items, const QString &fileN
 
 bool Compression::extract(const QString &path, const QString &extractPath) {
     //FIXME: Utils::mimeTypesOfArchives() --see
-    //TODO: handle those: (7zip handles all)
-    /* ARJ, CAB, CHM, CPIO, CramFS, DMG, FAT, HFS, LZH,
-     *MBR, MSI, NSIS, NTFS, SquashFS, UDF, VHD, WIM, XAR and Z */
+    QString workingDir = FileUtils::combine(extractPath, FileUtils::getNameWithoutPrefix(path));
+    workingDir = FileUtils::getFileNameDoesNotExists(workingDir, " ", 1, true);
+
+    if(!QDir::root().mkdir(workingDir))
+        return false;
+
 
     QString command;
     QStringList args;
@@ -85,15 +88,15 @@ bool Compression::extract(const QString &path, const QString &extractPath) {
     else if(mime == "application/x-7z-compressed" || mime == "application/zip" ||
             mime == "application/x-iso9660-image" || mime == "application/x-rar-compressed" ||
             mime == "application/x-rpm" || mime == "application/vnd.debian.binary-package" ||
-            mime == "application/x-lzma") {
+            mime == "application/x-lzma" || mime == "application/x-cd-image") {
         command = "7z";
-        args << "e" << "-y";
+        args << "x" << "-y";
     }
     else
         return false;
 
     args << path;
-    this->proc->setWorkingDirectory(extractPath);
+    this->proc->setWorkingDirectory(workingDir);
     this->proc->start(command, args);
 
     return true;

@@ -116,15 +116,7 @@ void SlothListView::openDir(QString dir, bool addHistory /* =true */) {
 }
 
 QString SlothListView::getCurrentDir() {
-    QString path = this->fsm->rootPath();
-    QFileInfo info(path);
-
-    if(info.isDir())
-        return path;
-    else if(info.isFile())
-        return info.absoluteDir().absolutePath();
-
-    return NULL;
+    return this->fsm->rootPath();
 }
 
 QString SlothListView::getCurrentTabName() {
@@ -169,6 +161,10 @@ bool SlothListView::goForward() {
         return (count >= 0 && this->historyCurrent <= count - 1);
     }
     return false;
+}
+
+void SlothListView::goUp() {
+    this->openDir(FileUtils::getUpperPath(this->getCurrentDir()));
 }
 
 void SlothListView::setShowHidden(bool enabled) {
@@ -403,7 +399,7 @@ void SlothListView::sendTo() {
 void SlothListView::properties() {
     this->infoDialog = new SlothInfoPanel();
     this->infoDialog->setInfo(this->getCurrentSelectedPaths(), true);
-    this->infoDialog->move(SlothSettings::getDefaultPosition());
+    this->infoDialog->move(SlothSettings::defaultPosition());
     this->infoDialog->show();
 }
 

@@ -8,25 +8,29 @@ QString FileUtils::join(const QStringList &list) {
     QString path = list[0];
     for(int i = 1; i < list.count(); ++i) {
         QString cpath = list[i];
-        if(cpath.startsWith('/'))
+        if(cpath.startsWith(QDir::separator()))
             path = cpath;
-        else if(path.isEmpty() || path.endsWith('/'))
+        else if(path.isEmpty() || path.endsWith(QDir::separator()))
             path += cpath;
         else
-            path += '/' + cpath;
+            path += QDir::separator() + cpath;
     }
     return QDir::cleanPath(path);
 }
 
 QString FileUtils::getName(const QString &path) {
-    QStringList list = path.split('/');
+    QStringList list = path.split(QDir::separator());
     return (list.last().isEmpty() ? list[list.count() - 2] : list.last());
 }
 
+QString FileUtils::getNameWithoutPrefix(const QString &path) {
+    return getName(path).split(".")[0];
+}
+
 QString FileUtils::getUpperPath(const QString &path) {
-    QStringList list = path.split('/');
+    QStringList list = path.split(QDir::separator());
     list.takeLast();
-    return QDir::cleanPath(list.join("/"));
+    return QDir::cleanPath(list.join(QDir::separator()));
 }
 
 QString FileUtils::getFileNameDoesNotExists(const QString &fullFilePath, const QString &joinString,
@@ -73,9 +77,9 @@ bool FileUtils::rename(const QString &oldPath) {
 
         if (ok && !newName.isEmpty()) {
             if(!oldPath.isEmpty()) {
-                QStringList newPathSplitted = oldPath.split('/');
+                QStringList newPathSplitted = oldPath.split(QDir::separator());
                 newPathSplitted.last().replace(_oldName, newName);
-                QString newPath = newPathSplitted.join("/");
+                QString newPath = newPathSplitted.join(QDir::separator());
 
                 return moveItem(oldPath, newPath);
             }
@@ -175,8 +179,7 @@ bool FileUtils::removeRecursively(const QString &itemPath) {
            iteratorDirs.next();
            QString dirName = iteratorDirs.fileInfo().fileName();
            if (iteratorDirs.fileInfo().isDir() /* && dirName != "." */ && dirName != "..") {
-               qDebug() << iteratorDirs.fileInfo().absoluteFilePath();
-               result = QDir("/").rmdir(iteratorDirs.fileInfo().absoluteFilePath());
+               result = QDir::root().rmdir(iteratorDirs.fileInfo().absoluteFilePath());
            }
         }
     }
@@ -185,6 +188,45 @@ bool FileUtils::removeRecursively(const QString &itemPath) {
 }
 
 bool FileUtils::copyRecursively(const QString &srcPath, const QString &tgtPath) {
+    bool result = true;
+
+    QFileInfo srcInfo(srcPath);
+
+    if(srcInfo.isFile()) {
+        if(!QFile(tgtPath).exists())
+            result = QDir::root().mkpath(tgtPath);
+
+        QString newPath = combine(tgtPath, srcInfo.fileName());
+        if(!QFile(newPath).exists())
+            result = QFile::copy(srcPath, newPath);
+
+        if (!result)
+            return result;
+    }
+    else if(srcInfo.isDir()) {
+        QDirIterator iterator(srcPath, QDir::Hidden | QDir::AllDirs | QDir::AllEntries | QDir::System,
+                                       QDirIterator::Subdirectories);
+        while (iterator.hasNext()) {
+           iterator.next();
+
+           if (iterator.fileInfo().isFile()) {
+               QString filePath = iterator.fileInfo().absoluteFilePath();
+               QString newFilePath = QString(filePath).replace(QDir::cleanPath(srcPath),
+                                                               QDir::cleanPath(tgtPath));
+               QString targetDir = FileUtils::getUpperPath(newFilePath);
+
+               if(!QFile(targetDir).exists())
+                   result = QDir::root().mkpath(targetDir);
+
+               if(!QFile(newFilePath).exists())
+                   result = QFile::copy(filePath, newFilePath);
+           }
+           if(!result)
+               return result;
+        }
+    }
+    /* old code: (has some bugs) */
+    /*
     bool result = true;
     QFileInfo srcInfo(srcPath);
 
@@ -222,6 +264,7 @@ bool FileUtils::copyRecursively(const QString &srcPath, const QString &tgtPath) 
         }
     }
     return result;
+    */
 }
 
 qint64 FileUtils::getDirSize(const QString &path) {

@@ -29,6 +29,7 @@ public:
     static QString getDocumentsLocationn();
     static QString getMoviesLocation();
     static QString getPicturesLocation();
+    static QString getMusicLocation();
     static QString getDownloadLocation();
     static QStringList getApplicationsLocation();
     static QString getTemplatesLocation();
