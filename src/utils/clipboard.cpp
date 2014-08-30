@@ -1,9 +1,10 @@
 #include "utils/clipboard.h"
+#include <QtConcurrent>
 
 Clipboard::Clipboard(QObject *parent) :
     QObject(parent)
 {
-
+    sc = new SlothCopier();
 }
 
 bool Clipboard::hasFiles() {
@@ -91,7 +92,7 @@ bool Clipboard::pasteText(const QString &pathToPaste) {
 bool Clipboard::pasteFiles(const QString &pathToPaste) {
     const QClipboard *clipboard = QApplication::clipboard();
     const QMimeData *mimeData = clipboard->mimeData();
-    bool result;
+    bool result = true;
 
     if(hasFiles()) {
         QStringList listFiles = mimeData->text().split("\n");
@@ -104,7 +105,8 @@ bool Clipboard::pasteFiles(const QString &pathToPaste) {
             else if(info.isDir())
                 newPath = FileUtils::combine(pathToPaste, FileUtils::getName(file));
 
-            result = FileUtils::copyRecursively(file, newPath);
+            sc->copier->copy(file, newPath);
+            //result = FileUtils::copyRecursively(file, newPath);
 
             if(!result)
                 return result;

@@ -20,6 +20,7 @@ private:
 public:
     static bool checkIfCommandExists(const QString &currentPath);
     static QStringList mimeTypesOfArchives();
+    static QStringList getDrives();
 
 };
 

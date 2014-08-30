@@ -10,6 +10,9 @@
 #endif
 
 #include "slothsettings.h"
+#include "utils/utils.h"
+#include "utils/fileutils.h"
+#include "utils/quick.h"
 
 class SlothPlaceItem : public QWidget
 {
@@ -48,7 +51,10 @@ public:
     QSpacerItem *verticalSpacer;
     QWidget *mainWidget;
 
+    void addItem(const QString &text, const QString &path, const QIcon &icon);
+    void addLine();
     void setCurrentItem(const QString &path);
+    void loadDrives();
 
 signals:
     void itemClicked(const QString &path);

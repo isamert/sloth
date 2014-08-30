@@ -11,18 +11,21 @@
 
 #include "utils/quick.h"
 #include "utils/fileutils.h"
+#include "qfilecopier/slothcopier.h"
 
 class Clipboard : public QObject
 {
     Q_OBJECT
 public:
     explicit Clipboard(QObject *parent = 0);
+    SlothCopier *sc;
+
     static bool hasFiles();
 
     static bool pasteImage(const QString &pathToPaste);
     static bool pasteText(const QString &pathToPaste);
-    static bool pasteFiles(const QString &pathToPaste);
-    static bool paste(const QString &pathToPaste);
+    bool pasteFiles(const QString &pathToPaste);
+    bool paste(const QString &pathToPaste);
 
 
 signals:

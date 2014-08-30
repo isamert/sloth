@@ -71,14 +71,15 @@ void SlothSettings::saveListViewValues(QListView *view) {
 }
 
 QStringList SlothSettings::defaultPlaces() {
+    //name=path=iconName
     QStringList list;
-    list << QObject::trUtf8("Home") + "=" + QDir::homePath();
-    list << QObject::trUtf8("Desktop") + "=" + SlothPlacesBox::getDesktopLocation();
-    list << QObject::trUtf8("Documents") + "=" + SlothPlacesBox::getDocumentsLocationn();
-    list << QObject::trUtf8("Downloads") + "=" + SlothPlacesBox::getDownloadLocation();
-    list << QObject::trUtf8("Music") + "=" + SlothPlacesBox::getMusicLocation();
-    list << QObject::trUtf8("Pictures") + "=" + SlothPlacesBox::getPicturesLocation();
-    list << QObject::trUtf8("Movies") + "=" + SlothPlacesBox::getMoviesLocation();
+    list << QObject::trUtf8("Home") + "=" + QDir::homePath() + "=go-home";
+    list << QObject::trUtf8("Desktop") + "=" + SlothPlacesBox::getDesktopLocation() + "=desktop";
+    list << QObject::trUtf8("Documents") + "=" + SlothPlacesBox::getDocumentsLocationn() + "=documents";
+    list << QObject::trUtf8("Downloads") + "=" + SlothPlacesBox::getDownloadLocation()+ "=downloads";
+    list << QObject::trUtf8("Music") + "=" + SlothPlacesBox::getMusicLocation()+ "=music";
+    list << QObject::trUtf8("Pictures") + "=" + SlothPlacesBox::getPicturesLocation() + "=pictures";
+    list << QObject::trUtf8("Movies") + "=" + SlothPlacesBox::getMoviesLocation() + "=movies";
     return list;
 }
 

@@ -9,11 +9,16 @@
 #include <QtGui>
 #endif
 
+#include <QtConcurrent>
+
 #include "compression/compressiondialog.h"
 #include "utils/fileutils.h"
 #include "utils/clipboard.h"
 #include "slothsettings.h"
 #include "slothpanels/slothinfopanel.h"
+#include "utils/desktopfile.h"
+#include "slothitems/slothfileeditor.h"
+#include "slothitems/slothfilesystemmodel.h"
 
 class SlothListView : public QListView
 {
@@ -23,11 +28,15 @@ private:
 public:
     explicit SlothListView(QWidget *parent = 0, const QString &path = QDir::homePath());
 
-    QFileSystemModel *fsm;
+    SlothFileSystemModel *sfsm;
     QMenu *contextMenuValid;
     QMenu *contextMenuEmpty;
     QStringList history;
     int historyCurrent;
+    Clipboard *clipboard;
+    QFileCopier *copier;
+
+
 
     QString getCurrentDir();
     QString getCurrentTabName();
@@ -75,6 +84,7 @@ private slots:
     void setShowHidden(bool enabled);
 
     void openInNewTab();
+    void openWith();
     void cut();
     void copy();
     void rename();
@@ -90,6 +100,8 @@ private slots:
     void paste();
 
     void newFileMenuItemClicked(const QString &path);
+    void emitTextEditRequested();
+    void emitImageViewerRequested();
 
 signals:
     void currentPathChanged(const QString &currentPath);
@@ -97,6 +109,8 @@ signals:
     void newEmptyTabRequested();
     void tabCloseRequested();
     void currentStatusChanged(const QString &currentPath);
+    void textEditRequested(const QString &filePath);
+    void imageViewerRequested(const QString &filePath);
 
 protected:
     void keyPressEvent(QKeyEvent *event);

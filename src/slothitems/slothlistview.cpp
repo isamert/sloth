@@ -12,9 +12,11 @@ SlothListView::SlothListView(QWidget *parent, const QString &path /* = QDir::hom
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onCustomContextMenu(const QPoint &)));
     //connect(this->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(onCurrentIndexChange(QModelIndex,QModelIndex)));
     connect(this->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(onSelectionChange(QItemSelection,QItemSelection)));
-    connect(this->fsm, SIGNAL(rootPathChanged(QString)), this, SLOT(onRootPathChanged(QString)));
+    connect(this->sfsm, SIGNAL(rootPathChanged(QString)), this, SLOT(onRootPathChanged(QString)));
 
     this->openDir(path);
+
+    this->clipboard = new Clipboard(this);
 }
 
 void SlothListView::loadSettings() {
@@ -28,9 +30,9 @@ void SlothListView::loadSettings() {
     this->setWrapping(true);
 
     //fsm:
-    this->fsm = new QFileSystemModel(this);
-    this->fsm->setFilter(QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot);
-    this->setModel(this->fsm);
+    this->sfsm = new SlothFileSystemModel(this);
+    this->sfsm->setFilter(QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot);
+    this->setModel(this->sfsm);
 }
 
 void SlothListView::loadActions() {
@@ -90,7 +92,7 @@ void SlothListView::loadNewFileMenu(const QString &tempDir, QMenu *menu) {
             this->loadNewFileMenu(info.absoluteFilePath(), this->menuNewFile->addMenu(info.fileName()));
         }
         else if(info.isFile()) {
-            QIcon icon = this->fsm->iconProvider()->icon(info);
+            QIcon icon = this->sfsm->iconProvider()->icon(info);
             QAction *act = menu->addAction(icon, info.baseName());
             connect(act, SIGNAL(triggered()), this->newFileMapper, SLOT(map()));
             act->setToolTip(info.absoluteFilePath());
@@ -108,7 +110,7 @@ void SlothListView::newFileMenuItemClicked(const QString &path) {
 }
 
 void SlothListView::openDir(QString dir, bool addHistory /* =true */) {
-    this->setRootIndex(this->fsm->setRootPath(dir));
+    this->setRootIndex(this->sfsm->setRootPath(dir));
     if(addHistory) {
         this->historyCurrent += 1;
         this->history.insert(this->historyCurrent, dir);
@@ -116,23 +118,23 @@ void SlothListView::openDir(QString dir, bool addHistory /* =true */) {
 }
 
 QString SlothListView::getCurrentDir() {
-    return this->fsm->rootPath();
+    return this->sfsm->rootPath();
 }
 
 QString SlothListView::getCurrentTabName() {
-    return FileUtils::getName(this->fsm->rootPath());
+    return FileUtils::getName(this->sfsm->rootPath());
 }
 
 QString SlothListView::getCurrentSelectedPath() {
     QModelIndex index = this->selectionModel()->currentIndex();
-    return this->fsm->fileInfo(index).absoluteFilePath();
+    return this->sfsm->fileInfo(index).absoluteFilePath();
 }
 
 QStringList SlothListView::getCurrentSelectedPaths() {
     QStringList list;
     QModelIndexList indexes = this->selectionModel()->selectedIndexes();
     foreach(QModelIndex index, indexes) {
-        list << FileUtils::combine(this->fsm->rootPath(), index.data(Qt::DisplayRole).toString());
+        list << FileUtils::combine(this->sfsm->rootPath(), index.data(Qt::DisplayRole).toString());
         //list << this->fsm->fileInfo(index).absoluteFilePath().toUtf8();
         //WTF: //FIXME:? this commented code has problems with utf-8 chars, but only here
     }
@@ -169,18 +171,18 @@ void SlothListView::goUp() {
 
 void SlothListView::setShowHidden(bool enabled) {
     if(enabled)
-        this->fsm->setFilter(QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
+        this->sfsm->setFilter(QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
     else
-        this->fsm->setFilter(QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot);
+        this->sfsm->setFilter(QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot);
 }
 
 void SlothListView::onCurrentIndexChange(const QModelIndex &current, const QModelIndex &previous) {
     QString status = "";
-    QFileInfo info = this->fsm->fileInfo(current);
+    QFileInfo info = this->sfsm->fileInfo(current);
 
     if(info.isFile())
         status = QString("%1 (%2) - %3").arg(info.fileName()).
-                 arg(FileUtils::formatFileSize(info.size())).arg(this->fsm->type(current));
+                 arg(FileUtils::formatFileSize(info.size())).arg(this->sfsm->type(current));
     else if(info.isDir())
         status = info.fileName() + " " + QString(trUtf8("(Contains %1 items)")).
                                          arg(QDir(info.absoluteFilePath()).entryList().count() - 2); //-2 because . and ..
@@ -226,7 +228,7 @@ void SlothListView::onSelectionChange(const QItemSelection &selected, const QIte
 
 
 void SlothListView::onDoubleClicked(const QModelIndex &index) {
-    QString path = this->fsm->filePath(index);
+    QString path = this->sfsm->filePath(index);
     QFileInfo info(path);
 
     if(info.isDir()) {
@@ -243,52 +245,66 @@ void SlothListView::onRootPathChanged(const QString &path) {
 }
 
 void SlothListView::keyPressEvent(QKeyEvent *event) {
-    if(event->matches(QKeySequence::Paste)) {
-        this->paste();
-    }
-    else if(event->matches(QKeySequence::SelectAll)) {
-        this->selectAll();
-    }
-    else if(event->key() == Qt::Key_Backspace) {
-        this->goBack();
-    }
-    else if(event->key() == Qt::Key_W && event->modifiers() == Qt::CTRL) {
-        emit this->tabCloseRequested();
-    }
-    else if(event->key() == Qt::Key_T && event->modifiers() == Qt::CTRL) {
-        emit this->newEmptyTabRequested();
-    }
-    else if(event->key() == Qt::Key_Delete && event->modifiers() == Qt::SHIFT) {
-        this->deletePermanently();
-    }
-    else if(event->key() == Qt::Key_H && event->modifiers() == Qt::CTRL) {
-        this->actShowHidden->trigger();
-    }
-    else if(!event->text().isEmpty()){
-        this->keyboardSearch(event->text());
-    }
-
     if(!this->selectionModel()->selectedIndexes().isEmpty()) {
-        if(event->key() == Qt::Key_Delete) {
+        if(event->key() == Qt::Key_Delete && event->modifiers() == Qt::SHIFT) {
+            this->deletePermanently();
+            return;
+        }
+        else if(event->key() == Qt::Key_Delete) {
             this->moveToTrash();
+            return;
         }
         else if(event->key() == Qt::Key_F2) {
             this->rename();
+            return;
         }
         else if(event->matches(QKeySequence::Copy)) {
             this->copy();
+            return;
         }
         else if(event->matches(QKeySequence::Cut)) {
             this->cut();
+            return;
         }
     }
+
+    if(event->matches(QKeySequence::Paste)) {
+        this->paste();
+        return;
+    }
+    else if(event->matches(QKeySequence::SelectAll)) {
+        this->selectAll();
+        return;
+    }
+    else if(event->key() == Qt::Key_Backspace) {
+        this->goBack();
+        return;
+    }
+    else if(event->key() == Qt::Key_W && event->modifiers() == Qt::CTRL) {
+        emit this->tabCloseRequested();
+        return;
+    }
+    else if(event->key() == Qt::Key_T && event->modifiers() == Qt::CTRL) {
+        emit this->newEmptyTabRequested();
+        return;
+    }
+    else if(event->key() == Qt::Key_H && event->modifiers() == Qt::CTRL) {
+        this->actShowHidden->trigger();
+        return;
+    }
+    else if(!event->text().isEmpty()){
+        this->keyboardSearch(event->text());
+        return;
+    }
+
+    event->accept();
 }
 
 void SlothListView::onCustomContextMenu(const QPoint &point) {
     QModelIndex index = this->indexAt(point);
     if (index.isValid()) { //when clicked on items
         //FIXME:
-        QFileInfo info(this->fsm->fileInfo(index).absoluteFilePath());
+        QFileInfo info(this->sfsm->fileInfo(index).absoluteFilePath());
         QString mime = FileUtils::getMimeType(info.absoluteFilePath());
         QMenu menu;
 
@@ -309,7 +325,28 @@ void SlothListView::onCustomContextMenu(const QPoint &point) {
             menu.exec(this->viewport()->mapToGlobal(point));
         }
         else if(info.isFile()) {
-            //TODO:menu.addAction(this->actOpenWith)
+            QMenu *openWith = menu.addMenu(trUtf8("Open with..."));
+
+            if(mime.startsWith("text/"))
+                openWith->addAction(Quick::getIcon("open-here"), trUtf8("Open here"), this, SLOT(emitTextEditRequested()));
+            else if(SlothFileEditor::getSupportedMimeTypes().contains(mime))
+                openWith->addAction(Quick::getIcon("open-here"), trUtf8("Open here"), this, SLOT(emitTextEditRequested()));
+            else if(mime.startsWith("image/"))
+                openWith->addAction(Quick::getIcon("open-here"), trUtf8("Open here"), this, SLOT(emitImageViewerRequested()));
+
+            DesktopFile df;
+            foreach (QString desktopFilePath, df.getDesktopFileFromMimeInfo(mime)) {
+                df.setPath(desktopFilePath);
+
+                if(df.load()) {
+                    QAction *act = openWith->addAction(df.getIcon(), df.getName(), this, SLOT(openWith()));
+                    act->setToolTip(df.getExec());
+                }
+            }
+
+            if(openWith->isEmpty())
+                delete openWith;
+
             menu.addAction(this->actCut);
             menu.addAction(this->actCopy);
             menu.addAction(this->actRename);
@@ -338,9 +375,29 @@ void SlothListView::onCustomContextMenu(const QPoint &point) {
     }
 }
 
+void SlothListView::emitTextEditRequested() {
+    emit this->textEditRequested(this->getCurrentSelectedPath());
+}
+
+void SlothListView::emitImageViewerRequested() {
+    emit this->imageViewerRequested(this->getCurrentSelectedPath());
+}
+
 void SlothListView::openInNewTab() {
     foreach(QString path, this->getCurrentSelectedPaths())
         emit this->newTabRequested(path);
+}
+
+void SlothListView::openWith() {
+    QAction *action = qobject_cast<QAction*>(sender());
+    QString exec = action->toolTip();
+    QStringList args;
+    QString file = this->getCurrentSelectedPath();
+
+    args << file;
+    exec = exec.split(" ")[0];
+
+    QProcess::startDetached(exec, args);
 }
 
 void SlothListView::cut() {
@@ -375,8 +432,16 @@ void SlothListView::deletePermanently() {
                                      trUtf8("Are you sure you want to delete this file?"
                                             " The item will be deleted permanently"));
         if(reply) {
-            foreach(QString path, this->getCurrentSelectedPaths())
-                FileUtils::removeRecursively(path);
+            QProgressDialog dialog;
+            dialog.setLabelText(trUtf8("Deleting files..."));
+
+            QFutureWatcher<void> futureWatcher;
+            connect(&futureWatcher, SIGNAL(progressRangeChanged(int,int)), &dialog, SLOT(setRange(int,int)));
+            connect(&dialog, SIGNAL(canceled()), &futureWatcher, SLOT(cancel()));
+            connect(&futureWatcher, SIGNAL(progressValueChanged(int)), &dialog, SLOT(setValue(int)));
+            connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
+            futureWatcher.setFuture(QtConcurrent::run(&FileUtils::removeRecursivelyWithList, this->getCurrentSelectedPaths()));
+            dialog.exec();
         }
     }
 }
@@ -441,5 +506,5 @@ void SlothListView::newFolder() {
 }
 
 void SlothListView::paste() {
-    Clipboard::paste(this->getCurrentDir());
+    this->clipboard->paste(this->getCurrentDir());
 }

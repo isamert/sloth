@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui concurrent
 LIBS     += -lmagic
 
 greaterThan(QT_MAJOR_VERSION, 4): LIBS -= -lmagic
@@ -30,7 +30,12 @@ SOURCES += main.cpp\
     utils/clipboard.cpp \
     slothaboutdialog.cpp \
     slothpanels/slothinfopanel.cpp \
-    slothpanels/slothplacespanel.cpp
+    slothpanels/slothplacespanel.cpp \
+    qfilecopier/qfilecopier.cpp \
+    qfilecopier/slothcopier.cpp \
+    utils/desktopfile.cpp \
+    slothitems/slothfileeditor.cpp \
+    slothitems/slothimageviewer.cpp
 
 HEADERS  += mainwindow.h \
     utils/quick.h \
@@ -47,7 +52,14 @@ HEADERS  += mainwindow.h \
     utils/clipboard.h \
     slothaboutdialog.h \
     slothpanels/slothinfopanel.h \
-    slothpanels/slothplacespanel.h
+    slothpanels/slothplacespanel.h \
+    qfilecopier/qfilecopier.h \
+    qfilecopier/qfilecopier_global.h \
+    qfilecopier/qfilecopier_p.h \
+    qfilecopier/slothcopier.h \
+    utils/desktopfile.h \
+    slothitems/slothfileeditor.h \
+    slothitems/slothimageviewer.h
 
 FORMS += \
     compression/compressiondialog.ui \

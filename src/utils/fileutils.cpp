@@ -152,7 +152,6 @@ bool FileUtils::moveToTrash(const QString &path) {
 }
 
 
-//FIXME: if its too long, show progress bar etc.. use QThread
 bool FileUtils::removeRecursively(const QString &itemPath) {
     bool result = true;
 
@@ -187,6 +186,14 @@ bool FileUtils::removeRecursively(const QString &itemPath) {
     return result;
 }
 
+bool FileUtils::removeRecursivelyWithList(const QStringList &items) {
+    bool result = true;
+    foreach(QString path, items) {
+        result = removeRecursively(path);
+    }
+    return result;
+}
+
 bool FileUtils::copyRecursively(const QString &srcPath, const QString &tgtPath) {
     bool result = true;
 
@@ -213,7 +220,7 @@ bool FileUtils::copyRecursively(const QString &srcPath, const QString &tgtPath) 
                QString filePath = iterator.fileInfo().absoluteFilePath();
                QString newFilePath = QString(filePath).replace(QDir::cleanPath(srcPath),
                                                                QDir::cleanPath(tgtPath));
-               QString targetDir = FileUtils::getUpperPath(newFilePath);
+               QString targetDir = getUpperPath(newFilePath);
 
                if(!QFile(targetDir).exists())
                    result = QDir::root().mkpath(targetDir);

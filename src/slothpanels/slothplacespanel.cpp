@@ -73,39 +73,62 @@ SlothPlacesPanel::SlothPlacesPanel(QWidget *parent) :
     this->setWidget(this->mainWidget);
     this->setWidgetResizable(true);
 
+    verticalSpacer = new QSpacerItem(10, 10, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    this->layout->addItem(verticalSpacer);
+
     foreach (QString name, SlothSettings::getPlaces()) {
         if(name == "addLine=addLine") {
-            QFrame *line;
-            line = new QFrame(this);
-            line->setObjectName(QString::fromUtf8("line"));
-            line->setFrameShape(QFrame::HLine);
-            line->setFrameShadow(QFrame::Sunken);
+            this->addLine();
         }
 
         QStringList l = name.split("=");
-
-        if(QFile::exists(l[1])) {
-            SlothPlaceItem *spi;
-            spi = new SlothPlaceItem(this);
-
-            spi->setText(l[0]);
-            spi->setPath(l[1]);
-            spi->setIcon(QIcon::fromTheme("go-home"));
-
-            spi->setToolTip(l[1]);
-
-            connect(spi, SIGNAL(clicked(QString)), this, SLOT(emitClicked(QString)));
-
-            this->layout->addWidget(spi);
-        }
+        //name=path=iconName
+        this->addItem(l[0], l[1], Quick::getIcon(l[2]));
     }
 
-    verticalSpacer = new QSpacerItem(10, 10, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    this->layout->addItem(verticalSpacer);
+    this->loadDrives();
 }
 
 void SlothPlacesPanel::emitClicked(const QString &path) {
     emit this->itemClicked(path);
+}
+
+void SlothPlacesPanel::loadDrives() {
+    QStringList list = Utils::getDrives();
+
+    if(!list.isEmpty()) {
+        this->addLine();
+        foreach (QString drive, list) {
+            this->addItem(FileUtils::getName(drive), drive, Quick::getIcon("drive-removeable-usb"));
+        }
+    }
+}
+
+void SlothPlacesPanel::addItem(const QString &text, const QString &path, const QIcon &icon) {
+    if(QFile::exists(path)) {
+        SlothPlaceItem *spi;
+        spi = new SlothPlaceItem(this);
+
+        spi->setText(text);
+        spi->setPath(path);
+        spi->setIcon(icon);
+        spi->setToolTip(path);
+
+        connect(spi, SIGNAL(clicked(QString)), this, SLOT(emitClicked(QString)));
+        this->layout->insertWidget(this->layout->count() - 1, spi);
+        //insert before the spacer, after the last item
+    }
+}
+
+void SlothPlacesPanel::addLine() {
+    QFrame *line;
+    line = new QFrame(this);
+    line->setObjectName(QString::fromUtf8("line"));
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    line->setObjectName("__LINE__");
+
+    this->layout->insertWidget(this->layout->count() - 1, line);
 }
 
 void SlothPlacesPanel::setCurrentItem(const QString &path) {
@@ -114,7 +137,7 @@ void SlothPlacesPanel::setCurrentItem(const QString &path) {
 
     for (int i = 0; i < this->layout->count(); ++i) {
         w = this->layout->itemAt(i)->widget();
-        if(w != NULL)
+        if(w != NULL && w->objectName() != "__LINE__")
             spi = dynamic_cast<SlothPlaceItem*>(w);
 
             if(spi->path == path)
@@ -123,6 +146,5 @@ void SlothPlacesPanel::setCurrentItem(const QString &path) {
                 spi->clearHighlight();
     }
 }
-
 
 

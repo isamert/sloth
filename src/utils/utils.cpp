@@ -18,3 +18,23 @@ QStringList Utils::mimeTypesOfArchives() {
             "application/x-lzma" << "application/x-cd-image";
     return list;
 }
+
+QStringList Utils::getDrives() {
+    QStringList mountpoints;;
+
+    QFile file("/etc/mtab");
+    if(file.open(QFile::ReadOnly)) {
+        while(true) {
+            QStringList parts = QString::fromLocal8Bit(file.readLine()).trimmed().split(" ");
+            if (parts.count() > 1) {
+                if(parts[1].contains("/media"))
+                    mountpoints << parts[1];
+            }
+            else
+                break;
+        }
+    }
+    return mountpoints;
+}
+
+

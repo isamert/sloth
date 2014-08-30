@@ -4,7 +4,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     this->loadWindow();
-    this->loadTab();
+    this->loadTabWidget();
     this->loadToolbar();
     this->loadMenuBar();
     this->loadPanels();
@@ -87,39 +87,48 @@ void MainWindow::loadPanels() {
     connect(this->pnlPlaces, SIGNAL(itemClicked(QString)), this, SLOT(openDir(QString)));
 }
 
-void MainWindow::loadTab() {
+void MainWindow::loadTabWidget() {
     this->tabWidget = new SlothTabWidget(this->centralWidget());
     this->gridLayout->addWidget(this->tabWidget, 0, 0, 1, 1);
     connect(this->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(handleCurrentTabChange(int)));
+    connect(this->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(handleTabCloseRequest(int)));
 }
 
-SlothListView* MainWindow::currentListView() {
+SlothListView *MainWindow::currentSlothListView() {
     return dynamic_cast<SlothListView*>(this->tabWidget->currentWidget());
 }
 
+SlothFileEditor *MainWindow::currentSlothFileEditor() {
+    return dynamic_cast<SlothFileEditor*>(this->tabWidget->currentWidget());
+}
+
+SlothImageViewer *MainWindow::currentSlothImageViewer() {
+    return dynamic_cast<SlothImageViewer*>(this->tabWidget->currentWidget());
+}
+
+
 void MainWindow::goBack() {
-    this->currentListView()->goBack();
+    this->currentSlothListView()->goBack();
 }
 
 void MainWindow::goForward() {
-    this->currentListView()->goForward();
+    this->currentSlothListView()->goForward();
 }
 
 void MainWindow::goUp() {
-    this->currentListView()->goUp();
+    this->currentSlothListView()->goUp();
 }
 
 void MainWindow::openDir(const QString &path) {
-    this->currentListView()->openDir(path);
+    this->currentSlothListView()->openDir(path);
 }
 
 QString MainWindow::getCurrentDir() {
-    return this->currentListView()->getCurrentDir();
+    return this->currentSlothListView()->getCurrentDir();
 }
 
 QString MainWindow::getCurrentIndexFile() {
-    QString fileName = this->currentListView()->selectionModel()->currentIndex().data().toString();
-    return FileUtils::combine(this->getCurrentDir(), fileName);
+    return this->currentSlothListView()->getCurrentSelectedPath();
 }
 
 void MainWindow::changeModel() {
@@ -128,17 +137,22 @@ void MainWindow::changeModel() {
 
 void MainWindow::addTab(const QString &path /* = QDir::homePath() */) {
     //TODO: get focus policy from SlothSettings(focus directly to new tab or not)
-    SlothListView *tabitem = new SlothListView(this, path);
+    SlothListView *slv = new SlothListView(this->tabWidget, path);
+    slv->setObjectName("__SLOTHLISTVIEW__");
 
-    this->tabWidget->addTab(tabitem, QDir(path).dirName());
-    this->tabWidget->setCurrentIndex(this->tabWidget->count() - 1);
+    int index = this->tabWidget->currentIndex() + 1;
+    this->tabWidget->insertTab(index, slv, QDir(path).dirName());
+    this->tabWidget->setCurrentIndex(index);
     this->handleCurrentPathChange(path);
 
-    connect(tabitem, SIGNAL(currentPathChanged(QString)), this, SLOT(handleCurrentPathChange(QString)));
-    connect(tabitem, SIGNAL(newTabRequested(QString)), this, SLOT(handleNewTabRequest(QString)));
-    connect(tabitem, SIGNAL(newEmptyTabRequested()), this, SLOT(addTab()));
-    connect(tabitem, SIGNAL(tabCloseRequested()), this, SLOT(closeCurrentTab()));
-    connect(tabitem, SIGNAL(currentStatusChanged(QString)), this, SLOT(handleStatusChange(QString)));
+    connect(slv, SIGNAL(currentPathChanged(QString)), this, SLOT(handleCurrentPathChange(QString)));
+    connect(slv, SIGNAL(newTabRequested(QString)), this, SLOT(handleNewTabRequest(QString)));
+    connect(slv, SIGNAL(newEmptyTabRequested()), this, SLOT(addTab()));
+    connect(slv, SIGNAL(tabCloseRequested()), this, SLOT(closeCurrentTab()));
+    connect(slv, SIGNAL(currentStatusChanged(QString)), this, SLOT(handleStatusChange(QString)));
+
+    connect(slv, SIGNAL(textEditRequested(QString)), this, SLOT(openNewTextEdit(QString)));
+    connect(slv, SIGNAL(imageViewerRequested(QString)), this, SLOT(openNewImageViewer(QString)));
 }
 
 void MainWindow::handleCurrentPathChange(const QString &path) {
@@ -149,9 +163,41 @@ void MainWindow::handleCurrentPathChange(const QString &path) {
 }
 
 void MainWindow::handleCurrentTabChange(int index) {
-    QString currPath = this->currentListView()->getCurrentDir();
+    QString objname = this->tabWidget->currentWidget()->objectName();
+    QString currPath = "";
+
+    if(objname == "__SLOTHLISTVIEW__") {
+        currPath = this->currentSlothListView()->getCurrentDir();
+        this->setEnabledWidgets(true);
+    }
+    else {
+        if(objname == "__SLOTHFILEEDITOR__")
+            currPath = this->currentSlothFileEditor()->getCurrentFile();
+        else if(objname == "__SLOTHIMAGEVIEWER__")
+            currPath = this->currentSlothImageViewer()->getCurrentFile();
+
+        this->setEnabledWidgets(false);
+    }
+
     this->navbar->setPath(currPath);
     this->pnlInfo->setInfo(currPath);
+}
+
+void MainWindow::setEnabledWidgets(bool enabled) {
+    this->toolbar->setEnabled(enabled);
+    this->pnlPlaces->setEnabled(enabled);
+
+    /*
+    this->navbar->setEnabled(enabled);
+    this->actBack->setEnabled(enabled);
+    this->actForward->setEnabled(enabled);
+    this->actUp->setEnabled(enabled);
+    */
+}
+
+void MainWindow::handleTabCloseRequest(int index) {
+    if(this->tabWidget->count() > 1)
+        delete this->tabWidget->widget(index);
 }
 
 void MainWindow::handleNewTabRequest(const QString &path) {
@@ -167,7 +213,8 @@ void MainWindow::handleCustomContextMenu(const QPoint &pos) {
 void MainWindow::closeCurrentTab() {
     //handles tabCloseRequested signal
     //this signal can only comes from current tab
-    //TODO: close
+    if(this->tabWidget->count() > 1)
+        delete this->tabWidget->currentWidget();
 }
 
 void MainWindow::handleStatusChange(const QString &status) {
@@ -178,6 +225,34 @@ void MainWindow::handleStatusChange(const QString &status) {
         this->pnlInfo->setInfo(this->getCurrentDir());
     else
         this->pnlInfo->setInfo(this->getCurrentIndexFile());
+}
+
+void MainWindow::handleImageViewerPathChange(const QString &filePath) {
+    this->tabWidget->setTabText(this->tabWidget->currentIndex(), FileUtils::getName(filePath));
+    this->navbar->setPath(filePath);
+    this->pnlInfo->setInfo(filePath);
+}
+
+void MainWindow::openNewTextEdit(const QString &filePath) {
+    SlothFileEditor *sfe = new SlothFileEditor(this->tabWidget);
+    sfe->setObjectName("__SLOTHFILEEDITOR__");
+    sfe->setFile(filePath);
+
+    int index = this->tabWidget->currentIndex() + 1;
+    this->tabWidget->insertTab(index, sfe, FileUtils::getName(filePath));
+    this->tabWidget->setCurrentIndex(index);
+}
+
+void MainWindow::openNewImageViewer(const QString &filePath) {
+    SlothImageViewer *siv = new SlothImageViewer(this->tabWidget);
+    siv->setObjectName("__SLOTHIMAGEVIEWER__");
+    siv->setFile(filePath);
+
+    int index = this->tabWidget->currentIndex() + 1;
+    this->tabWidget->insertTab(index, siv, FileUtils::getName(filePath));
+    this->tabWidget->setCurrentIndex(index);
+
+    connect(siv, SIGNAL(currentFileChanged(QString)), this, SLOT(handleImageViewerPathChange(QString)));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {

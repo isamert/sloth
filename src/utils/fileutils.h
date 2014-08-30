@@ -31,6 +31,7 @@ public:
     static bool rename(const QString &oldPath);
     static bool moveToTrash(const QString &path);
     static bool removeRecursively(const QString &itemPath);
+    static bool removeRecursivelyWithList(const QStringList &items);
     static bool copyRecursively(const QString &srcPath, const QString &tgtPath);
 
     static qint64 getDirSize(const QString &path);

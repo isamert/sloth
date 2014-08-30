@@ -8,6 +8,11 @@ SlothInfoPanel::SlothInfoPanel(QWidget *parent) :
     //TODO: change file permissions
 
     ui->setupUi(this);
+    ui->lblFileName->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    ui->lblModified->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    ui->lblSize->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    ui->lblType->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
     this->setWindowTitle(trUtf8("Information"));
     ui->lblImage->setFixedHeight(128);
 

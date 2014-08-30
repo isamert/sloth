@@ -8,6 +8,8 @@
 #include "slothpanels/slothinfopanel.h"
 #include "slothpanels/slothplacespanel.h"
 #include "slothsettings.h"
+#include "slothitems/slothfileeditor.h"
+#include "slothitems/slothimageviewer.h"
 
 class MainWindow : public QMainWindow
 {
@@ -47,14 +49,16 @@ private:
     void loadWindow();
     void loadMenuBar();
     void loadToolbar();
-    void loadTab();
+    void loadTabWidget();
     void loadPanels();
 
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    SlothListView *currentListView();
+    SlothListView *currentSlothListView();
+    SlothFileEditor *currentSlothFileEditor();
+    SlothImageViewer *currentSlothImageViewer();
 
 private slots:
     //toolbar:
@@ -65,16 +69,23 @@ private slots:
     //update:
     void handleCurrentPathChange(const QString &path);
     void handleCurrentTabChange(int index);
+    void handleTabCloseRequest(int index);
     void handleNewTabRequest(const QString &path);
     void handleCustomContextMenu(const QPoint &pos);
     void closeCurrentTab();
     void handleStatusChange(const QString &status);
+    void handleImageViewerPathChange(const QString &filePath);
+    void setEnabledWidgets(bool enabled);
 
     //other:
     void openDir(const QString &path);
     QString getCurrentDir();
     QString getCurrentIndexFile();
     void changeModel();
+
+    //open:
+    void openNewTextEdit(const QString &filePath);
+    void openNewImageViewer(const QString &filePath);
 
     void addTab(const QString &path = QDir::homePath());
 
