@@ -82,7 +82,7 @@ QStringList SlothSettings::defaultPlaces() {
     list << QObject::trUtf8("Pictures") + "=" + SlothPlacesBox::getPicturesLocation() + "=folder-pictures";
     list << QObject::trUtf8("Videos") + "=" + SlothPlacesBox::getMoviesLocation() + "=folder-videos";
     list << "addLine";
-    list << QObject::trUtf8("Applications") + "=" + SlothPlacesBox::getApplicationsLocation()[0] + "=folder-system";
+    list << QObject::trUtf8("Applications") + "=" + SlothPlacesBox::getApplicationsLocation() + "=folder-system";
     list << QObject::trUtf8("Trash") + "=" + "__TRASH__" + "=user-trash";
 
     return list;

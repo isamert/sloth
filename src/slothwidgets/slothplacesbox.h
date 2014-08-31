@@ -31,7 +31,7 @@ public:
     static QString getPicturesLocation();
     static QString getMusicLocation();
     static QString getDownloadLocation();
-    static QStringList getApplicationsLocation();
+    static QString getApplicationsLocation();
     static QString getPublicShareLocation();
     static QString getTemplatesLocation();
 

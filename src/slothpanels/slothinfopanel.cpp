@@ -75,7 +75,7 @@ void SlothInfoPanel::setInfo(const QFileInfo &info, bool showDirSize /* = false 
     if(mime.contains("image")) {
         try { // maybe qt cannot read this image file
             QPixmap pm(info.absoluteFilePath());
-            pixmap = pm.scaled(QSize(128, 128));
+            pixmap = pm.scaled(QSize(128, 128), Qt::KeepAspectRatioByExpanding);
         }
         catch (...) {
             pixmap = iconProv.icon(info).pixmap(QSize(128, 128));

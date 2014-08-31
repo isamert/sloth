@@ -37,4 +37,20 @@ QStringList Utils::getDrives() {
     return mountpoints;
 }
 
+QString Utils::getTempFile() {
+    return FileUtils::combine(QDir::tempPath(), "sloth-temp.temp");
+}
 
+int Utils::ramdomInt(int low, int high) {
+    return qrand() % ((high + 1) - low) + low;
+}
+
+QString Utils::randomString(int charlen) {
+    QString str;
+    static QString alphanumeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    for (int i = 0; i < charlen; ++i)
+        str[i] = alphanumeric[qrand() % (alphanumeric.count() - 1)];
+
+    return str;
+}

@@ -2,14 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "slothitems/slothlistview.h"
-#include "slothitems/slothnavigationbar.h"
-#include "slothitems/slothtabwidget.h"
+#include "slothwidgets/slothlistview.h"
+#include "slothwidgets/slothnavigationbar.h"
+#include "slothwidgets/slothtabwidget.h"
 #include "slothpanels/slothinfopanel.h"
 #include "slothpanels/slothplacespanel.h"
 #include "slothsettings.h"
-#include "slothitems/slothfileeditor.h"
-#include "slothitems/slothimageviewer.h"
+#include "slothapps//slothfileeditor.h"
+#include "slothapps/slothimageviewer.h"
 
 class MainWindow : public QMainWindow
 {
@@ -30,6 +30,8 @@ private:
 
     //items:
     QToolBar *toolbar;
+    QToolBar *filterbar;
+    QLineEdit *lineFilter;
     QMenuBar *menubar;
     QStatusBar *statusbar;
     QAction *actBack;
@@ -51,6 +53,7 @@ private:
     void loadToolbar();
     void loadTabWidget();
     void loadPanels();
+    void loadFilterBar();
 
 public:
     MainWindow(QWidget *parent = 0);
@@ -75,7 +78,9 @@ private slots:
     void closeCurrentTab();
     void handleStatusChange(const QString &status);
     void handleImageViewerPathChange(const QString &filePath);
+    void onFilterChange();
     void setEnabledWidgets(bool enabled);
+    void showFilterBar();
 
     //other:
     void openDir(const QString &path);
@@ -87,10 +92,11 @@ private slots:
     void openNewTextEdit(const QString &filePath);
     void openNewImageViewer(const QString &filePath);
 
-    void addTab(const QString &path = QDir::homePath());
+    void openNewListView(const QString &path = QDir::homePath());
 
 
 protected:
+    bool eventFilter(QObject *obj, QEvent *event);
     void closeEvent(QCloseEvent *event);
 
 };

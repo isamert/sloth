@@ -1,4 +1,4 @@
-#include "slothimageviewer.h"
+#include "slothapps/slothimageviewer.h"
 
 SlothImageViewer::SlothImageViewer(QWidget *parent, const QString &filePath /* = "" */) :
     QWidget(parent)

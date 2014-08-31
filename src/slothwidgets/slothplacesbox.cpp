@@ -1,4 +1,4 @@
-#include "slothitems/slothplacesbox.h"
+#include "slothwidgets/slothplacesbox.h"
 
 SlothPlacesBox::SlothPlacesBox(QWidget *parent) :
     QComboBox(parent)
@@ -8,18 +8,18 @@ SlothPlacesBox::SlothPlacesBox(QWidget *parent) :
                   QVariant(QDir::homePath()));
     this->addItem(Quick::getIcon("user-desktop"), trUtf8("Desktop"),
                   QVariant(this->getDesktopLocation()));
-    this->addItem(Quick::getIcon("emblem-system"), "/" + trUtf8("(File System)"),
+    this->addItem(Quick::getIcon("emblem-system"), "/" + trUtf8(" (File System)"),
                   QVariant("/"));
 
     this->insertSeparator(this->count());
 
-    this->addItem(Quick::getIcon("user-documents"), trUtf8("Documents"),
+    this->addItem(Quick::getIcon("folder-documents"), trUtf8("Documents"),
                   QVariant(this->getDocumentsLocationn()));
-    this->addItem(Quick::getIcon("user-downloads"), trUtf8("Downloads"),
+    this->addItem(Quick::getIcon("folder-downloads"), trUtf8("Downloads"),
                   QVariant(this->getDownloadLocation()));
-    this->addItem(Quick::getIcon("user-photos"), trUtf8("Photos"),
+    this->addItem(Quick::getIcon("folder-photos"), trUtf8("Photos"),
                   QVariant(this->getPicturesLocation()));
-    this->addItem(Quick::getIcon("user-movies"), trUtf8("Movies"),
+    this->addItem(Quick::getIcon("folder-videos"), trUtf8("Videos"),
                   QVariant(this->getMoviesLocation()));
 
     this->insertSeparator(this->count());
@@ -119,13 +119,17 @@ QString SlothPlacesBox::getPicturesLocation()
 #endif
 }
 
-QStringList SlothPlacesBox::getApplicationsLocation()
+QString SlothPlacesBox::getApplicationsLocation()
 {
+    return "/usr/share/applications";
+/*
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    return QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+    return QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)[1];
 #else
-    return QStringList(QDesktopServices::storageLocation(QDesktopServices::ApplicationsLocation));
+    return "/usr/share/applications";
+    //QStringList(QDesktopServices::storageLocation(QDesktopServices::ApplicationsLocation));
 #endif
+*/
 }
 
 QString SlothPlacesBox::getPublicShareLocation() {

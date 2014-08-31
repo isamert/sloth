@@ -17,8 +17,8 @@
 #include "slothsettings.h"
 #include "slothpanels/slothinfopanel.h"
 #include "utils/desktopfile.h"
-#include "slothitems/slothfileeditor.h"
-#include "slothitems/slothfilesystemmodel.h"
+#include "slothapps//slothfileeditor.h"
+#include "slothobjects/slothfilesystemmodel.h"
 
 class SlothListView : public QListView
 {
@@ -42,7 +42,9 @@ public:
     QString getCurrentTabName();
     QString getCurrentSelectedPath();
     QStringList getCurrentSelectedPaths();
-    void openDir(QString dir, bool addHistory = true);
+    void openDir(const QString &dir, bool addHistory = true);
+    void filterItems(const QString &filter);
+    void filterItems(const QStringList &filter);
     bool goBack();
     bool goForward();
     void goUp();
@@ -108,6 +110,7 @@ signals:
     void newTabRequested(const QString &currentPath);
     void newEmptyTabRequested();
     void tabCloseRequested();
+    void filterRequested();
     void currentStatusChanged(const QString &currentPath);
     void textEditRequested(const QString &filePath);
     void imageViewerRequested(const QString &filePath);

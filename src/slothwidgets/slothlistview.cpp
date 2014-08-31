@@ -24,16 +24,17 @@ void SlothListView::loadSettings() {
     SlothSettings::loadListViewValues(this);
     this->setSelectionMode(QAbstractItemView::ExtendedSelection);
     this->setContextMenuPolicy(Qt::CustomContextMenu);
-    //this->setUniformItemSizes(true);
+    this->setUniformItemSizes(true);
     this->setLayoutMode(QListView::Batched);
     this->setResizeMode(QListView::Adjust);
-    this->setSelectionRectVisible(true);
+    //this->setSelectionRectVisible(true);
     //this->setFlow(QListView::LeftToRight);
     this->setWrapping(true);
 
     //fsm:
     this->sfsm = new SlothFileSystemModel(this);
-    this->sfsm->setFilter(QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot);
+    this->sfsm->setFilter(QDir::AllEntries | QDir::NoDotAndDotDot);
+    this->sfsm->setNameFilterDisables(false);
     this->setModel(this->sfsm);
 }
 
@@ -88,8 +89,7 @@ void SlothListView::loadActions() {
 void SlothListView::loadNewFileMenu(const QString &tempDir, QMenu *menu) {
     QDir dir(tempDir);
 
-    foreach(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllDirs |
-                                              QDir::Files, QDir::DirsFirst)) {
+    foreach(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries, QDir::DirsFirst)) {
         if(info.isDir()) {
             this->loadNewFileMenu(info.absoluteFilePath(), this->menuNewFile->addMenu(info.fileName()));
         }
@@ -111,11 +111,26 @@ void SlothListView::newFileMenuItemClicked(const QString &path) {
         Quick::msgWarning(trUtf8("Error"), trUtf8("Can not create new file from template."));
 }
 
-void SlothListView::openDir(QString dir, bool addHistory /* =true */) {
+void SlothListView::openDir(const QString &dir, bool addHistory /* =true */) {
     this->setRootIndex(this->sfsm->setRootPath(dir));
     if(addHistory) {
         this->historyCurrent += 1;
         this->history.insert(this->historyCurrent, dir);
+    }
+}
+
+void SlothListView::filterItems(const QString &filter) {
+    this->filterItems(QStringList(filter));
+}
+
+void SlothListView::filterItems(const QStringList &filter) {
+    if(filter.isEmpty()) //FIXME: is there another way to clean filters?
+        this->sfsm->setNameFilters(QStringList("*"));
+    else {
+        if(filter[0].isEmpty())
+            this->sfsm->setNameFilters(QStringList("*"));
+        else
+            this->sfsm->setNameFilters(QStringList(filter));
     }
 }
 
@@ -172,9 +187,9 @@ void SlothListView::goUp() {
 
 void SlothListView::setShowHidden(bool enabled) {
     if(enabled)
-        this->sfsm->setFilter(QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
+        this->sfsm->setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
     else
-        this->sfsm->setFilter(QDir::AllDirs | QDir::AllEntries | QDir::NoDotAndDotDot);
+        this->sfsm->setFilter(QDir::AllEntries | QDir::NoDotAndDotDot);
 }
 
 void SlothListView::onCurrentIndexChange(const QModelIndex &current, const QModelIndex &previous) {
@@ -276,6 +291,9 @@ void SlothListView::keyPressEvent(QKeyEvent *event) {
     else if(event->matches(QKeySequence::SelectAll)) {
         this->selectAll();
         return;
+    }
+    else if(event->matches(QKeySequence::Find)) {
+        emit this->filterRequested();
     }
     else if(event->key() == Qt::Key_Backspace) {
         this->goBack();
@@ -403,7 +421,14 @@ void SlothListView::openWith() {
 
 void SlothListView::cut() {
     this->copy();
-    //TODO:write to temp file
+
+    QFile sfile(Utils::getTempFile());
+    if (!sfile.open(QFile::WriteOnly | QFile::Text))
+        return;
+
+    QTextStream out(&sfile);
+    out << qApp->clipboard()->text();
+    sfile.close();
 }
 
 void SlothListView::copy() {
@@ -454,6 +479,7 @@ void SlothListView::compress() {
 }
 
 void SlothListView::extract() {
+    //TODO: add progressbar
     Compression comp;
     comp.extract(this->getCurrentSelectedPath(), this->getCurrentDir());
 }
@@ -507,5 +533,9 @@ void SlothListView::newFolder() {
 }
 
 void SlothListView::paste() {
+    if(this->clipboard->hasFiles()) {
+
+    }
+
     this->clipboard->paste(this->getCurrentDir());
 }

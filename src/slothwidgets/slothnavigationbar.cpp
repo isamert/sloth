@@ -1,4 +1,4 @@
-#include "slothitems/slothnavigationbar.h"
+#include "slothwidgets/slothnavigationbar.h"
 
 ClickableLabel::ClickableLabel(QWidget *parent /* = 0 */,
                                const QString &text /* = "" */, bool effect /* = false */ ) :

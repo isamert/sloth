@@ -8,8 +8,9 @@ MainWindow::MainWindow(QWidget *parent)
     this->loadToolbar();
     this->loadMenuBar();
     this->loadPanels();
+    this->loadFilterBar();
 
-    this->addTab();
+    this->openNewListView();
 }
 
 MainWindow::~MainWindow() {}
@@ -33,8 +34,15 @@ void MainWindow::loadWindow() {
     SlothSettings::loadWindowValues(this);
 }
 
+void MainWindow::loadTabWidget() {
+    this->tabWidget = new SlothTabWidget(this->centralWidget());
+    this->gridLayout->addWidget(this->tabWidget, 1, 0, 1, 1);
+    connect(this->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(handleCurrentTabChange(int)));
+    connect(this->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(handleTabCloseRequest(int)));
+}
+
 void MainWindow::loadToolbar() {
-    this->toolbar = new QToolBar();
+    this->toolbar = new QToolBar(trUtf8("Toolbar"), this);
     this->toolbar->setMovable(false);
     this->toolbar->setContextMenuPolicy(Qt::CustomContextMenu);
     //this->gridLayout->addWidget(this->toolbar, 0, 0, 1, 1);
@@ -88,11 +96,34 @@ void MainWindow::loadPanels() {
     connect(this->pnlPlaces, SIGNAL(itemClicked(QString)), this, SLOT(openDir(QString)));
 }
 
-void MainWindow::loadTabWidget() {
-    this->tabWidget = new SlothTabWidget(this->centralWidget());
-    this->gridLayout->addWidget(this->tabWidget, 1, 0, 1, 1);
-    connect(this->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(handleCurrentTabChange(int)));
-    connect(this->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(handleTabCloseRequest(int)));
+void MainWindow::loadFilterBar() {
+    this->filterbar = new QToolBar(trUtf8("Filter Files/Folders"), this);
+    this->gridLayout->addWidget(this->filterbar, 2, 0, 1, 1);
+    this->filterbar->hide();
+
+    this->lineFilter = new QLineEdit(this->filterbar);
+    this->lineFilter->setPlaceholderText(trUtf8("(Press Enter to filter)"));
+    this->lineFilter->installEventFilter(this);
+    this->filterbar->addWidget(this->lineFilter);
+
+    this->filterbar->addAction(Quick::getIcon("exit"), trUtf8("Close"), this->filterbar, SLOT(hide()));
+
+    connect(lineFilter, SIGNAL(returnPressed()), this, SLOT(onFilterChange()));
+}
+
+bool MainWindow::eventFilter(QObject* obj, QEvent *event) {
+    //TODO:(maybe) take every event from slothlistview to here and add treeview, detailview etc...
+    if (obj == this->lineFilter) {
+        if (event->type() == QEvent::KeyPress) {
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+
+            if (keyEvent->key() == Qt::Key_Escape || keyEvent->matches(QKeySequence::Find)) {
+                this->showFilterBar();
+                return true;
+            }
+        }
+    }
+    return QMainWindow::eventFilter(obj, event);
 }
 
 SlothListView *MainWindow::currentSlothListView() {
@@ -136,7 +167,7 @@ void MainWindow::changeModel() {
     this->navbar->changeModel();
 }
 
-void MainWindow::addTab(const QString &path /* = QDir::homePath() */) {
+void MainWindow::openNewListView(const QString &path /* = QDir::homePath() */) {
     //TODO: get focus policy from SlothSettings(focus directly to new tab or not)
     SlothListView *slv = new SlothListView(this->tabWidget, path);
     slv->setObjectName("__SLOTHLISTVIEW__");
@@ -148,12 +179,13 @@ void MainWindow::addTab(const QString &path /* = QDir::homePath() */) {
 
     connect(slv, SIGNAL(currentPathChanged(QString)), this, SLOT(handleCurrentPathChange(QString)));
     connect(slv, SIGNAL(newTabRequested(QString)), this, SLOT(handleNewTabRequest(QString)));
-    connect(slv, SIGNAL(newEmptyTabRequested()), this, SLOT(addTab()));
+    connect(slv, SIGNAL(newEmptyTabRequested()), this, SLOT(openNewListView()));
     connect(slv, SIGNAL(tabCloseRequested()), this, SLOT(closeCurrentTab()));
     connect(slv, SIGNAL(currentStatusChanged(QString)), this, SLOT(handleStatusChange(QString)));
 
     connect(slv, SIGNAL(textEditRequested(QString)), this, SLOT(openNewTextEdit(QString)));
     connect(slv, SIGNAL(imageViewerRequested(QString)), this, SLOT(openNewImageViewer(QString)));
+    connect(slv, SIGNAL(filterRequested()), this, SLOT(showFilterBar()));
 }
 
 void MainWindow::handleCurrentPathChange(const QString &path) {
@@ -184,9 +216,14 @@ void MainWindow::handleCurrentTabChange(int index) {
     this->pnlInfo->setInfo(currPath);
 }
 
+void MainWindow::onFilterChange() {
+    this->currentSlothListView()->filterItems(this->lineFilter->text().split("|"));
+}
+
 void MainWindow::setEnabledWidgets(bool enabled) {
     this->toolbar->setEnabled(enabled);
     this->pnlPlaces->setEnabled(enabled);
+    this->filterbar->setEnabled(enabled);
 
     /*
     this->navbar->setEnabled(enabled);
@@ -202,7 +239,7 @@ void MainWindow::handleTabCloseRequest(int index) {
 }
 
 void MainWindow::handleNewTabRequest(const QString &path) {
-    this->addTab(path);
+    this->openNewListView(path);
 }
 
 void MainWindow::handleCustomContextMenu(const QPoint &pos) {
@@ -232,6 +269,13 @@ void MainWindow::handleImageViewerPathChange(const QString &filePath) {
     this->tabWidget->setTabText(this->tabWidget->currentIndex(), FileUtils::getName(filePath));
     this->navbar->setPath(filePath);
     this->pnlInfo->setInfo(filePath);
+}
+
+void MainWindow::showFilterBar() {
+    this->filterbar->setVisible(!this->filterbar->isVisible());
+
+    if(this->filterbar->isVisible())
+        this->lineFilter->setFocus();
 }
 
 void MainWindow::openNewTextEdit(const QString &filePath) {

@@ -86,17 +86,23 @@ QString DesktopFile::getName() {
 }
 
 QIcon DesktopFile::getIcon() {
-    if(QIcon::hasThemeIcon(this->icon)) {
-        return QIcon::fromTheme(this->icon);
-    }
-    else {
-        QString share = "/usr/share/pixmaps"; //TODO: add /usr/local/share, ~/.local/share
-        QString shareIcon = FileUtils::combine(share, this->icon + ".png");
+    if(!this->icon.isEmpty()) {
+        if(QIcon::hasThemeIcon(this->icon)) {
+            return QIcon::fromTheme(this->icon);
+        }
+        else if(QFile::exists(this->icon))
+            return QIcon(this->icon);
+        else {
+            QString share = "/usr/share/pixmaps"; //TODO: add /usr/local/share, ~/.local/share
+            QString shareIcon = FileUtils::combine(share, this->icon + ".png");
+            QString shareIcon2 = FileUtils::combine(share, this->icon);
 
-        if(QFile::exists(shareIcon))
-            return QIcon(shareIcon);
+            if(QFile::exists(shareIcon))
+                return QIcon(shareIcon);
+            else if(QFile::exists(shareIcon2))
+                return QIcon(shareIcon2);
+        }
     }
-
     return QIcon();
 }
 
@@ -106,4 +112,11 @@ QStringList DesktopFile::getMimeTypes() {
 
 QString DesktopFile::getExec() {
     return this->exec;
+}
+
+void DesktopFile::clear() {
+    this->name = "";
+    this->icon = "";
+    this->exec = "";
+    this->mimeTypes = "";
 }

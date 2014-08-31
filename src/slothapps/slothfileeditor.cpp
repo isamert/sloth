@@ -1,4 +1,4 @@
-#include "slothfileeditor.h"
+#include "slothapps/slothfileeditor.h"
 
 SlothFileEditor::SlothFileEditor(QWidget *parent, const QString &filePath /* = "" */) :
     QWidget(parent)

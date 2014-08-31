@@ -12,7 +12,7 @@
 #include "compression/compression.h"
 #include "utils/fileutils.h"
 #include "utils/quick.h"
-#include "slothitems/slothplacesbox.h"
+#include "slothwidgets/slothplacesbox.h"
 
 namespace Ui {
 class CompressionDialog;

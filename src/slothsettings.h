@@ -9,7 +9,7 @@
 #include <QtGui>
 #endif
 
-#include "slothitems/slothplacesbox.h"
+#include "slothwidgets/slothplacesbox.h"
 
 class SlothSettings
 {

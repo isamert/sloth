@@ -9,7 +9,7 @@
 #include <QtGui>
 #endif
 
-#include "slothitems/slothplacesbox.h"
+#include "slothwidgets/slothplacesbox.h"
 #include "utils/quick.h"
 #include "utils/fileutils.h"
 
