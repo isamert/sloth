@@ -9,6 +9,9 @@
 class SlothFileSystemModel : public QFileSystemModel
 {
     Q_OBJECT
+
+private:
+
 public:
     explicit SlothFileSystemModel(QObject *parent = 0);
     DesktopFile *desktopFile;

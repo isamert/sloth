@@ -32,6 +32,7 @@ public:
     static QString getMusicLocation();
     static QString getDownloadLocation();
     static QStringList getApplicationsLocation();
+    static QString getPublicShareLocation();
     static QString getTemplatesLocation();
 
     static QString getFromXDG(const QString &dirName);

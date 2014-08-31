@@ -6,6 +6,7 @@ Compression::Compression(QObject *parent) :
     proc = new QProcess();
     connect(proc, SIGNAL(finished(int)), this, SLOT(handleFinish(int)));
     connect(proc, SIGNAL(readyReadStandardError()), this, SLOT(handleError()));
+    connect(proc, SIGNAL(readyRead()), this, SLOT(readOutput()));
     connect(proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readOutput()));
 
     listFtype7z << "-ttar" << "-tgzip" << "-tbzip2" << "-t7z" << "-tzip" << "-tiso" << "-tudf";
@@ -114,7 +115,7 @@ bool Compression::createIso(const QStringList &items, const QString &fileName) {
 }
 
 void Compression::readOutput() {
-    emit this->progressChanged(QString(this->proc->readAllStandardOutput()));
+    emit this->progressChanged(QString(this->proc->readAll()));
 
 }
 

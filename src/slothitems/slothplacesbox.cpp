@@ -124,8 +124,12 @@ QStringList SlothPlacesBox::getApplicationsLocation()
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     return QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
 #else
-    return QStringList(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation));
+    return QStringList(QDesktopServices::storageLocation(QDesktopServices::ApplicationsLocation));
 #endif
+}
+
+QString SlothPlacesBox::getPublicShareLocation() {
+    return getFromXDG("PUBLICSHARE");
 }
 
 QString SlothPlacesBox::getTemplatesLocation() {

@@ -18,9 +18,9 @@ SlothPlaceItem::SlothPlaceItem(QWidget *parent, const QString &text /* = "" */,
     this->layout->addWidget(this->image);
     this->layout->addWidget(this->text);
 
-    this->image->setFixedWidth(40); //8 for spacing, setSpacing(8) does not work
-                                    //it brokes background color
-    this->setFixedHeight(35);     //3 for spacing between SlothPlaceItems
+    this->image->setFixedWidth(27); // 3 for spacing, setSpacing(3) does not work
+                                    // it brokes background color
+    this->setFixedHeight(27);       // 3 for spacing between SlothPlaceItems
 
     this->text->setText(text);
     this->path = path;
@@ -28,7 +28,7 @@ SlothPlaceItem::SlothPlaceItem(QWidget *parent, const QString &text /* = "" */,
 }
 
 void SlothPlaceItem::setIcon(const QIcon &icon) {
-    this->image->setPixmap(icon.pixmap(32, 32));
+    this->image->setPixmap(icon.pixmap(24, 24));
 }
 
 void SlothPlaceItem::setText(const QString &text) {
@@ -40,9 +40,6 @@ void SlothPlaceItem::setPath(const QString &path) {
 }
 
 void SlothPlaceItem::highlight() {
-    //FIXME: find a better color
-    //this->setStyleSheet("* { background-color: rgb(50, 50, 50); }");
-
     QColor color = QWidget::palette().color(QPalette::Highlight);
     this->text->setBackgroundRole(QPalette::Dark);
     this->setStyleSheet(QString("* { background-color: %1; }").arg(color.name()));
@@ -77,8 +74,9 @@ SlothPlacesPanel::SlothPlacesPanel(QWidget *parent) :
     this->layout->addItem(verticalSpacer);
 
     foreach (QString name, SlothSettings::getPlaces()) {
-        if(name == "addLine=addLine") {
+        if(name == "addLine=addLine" || name == "addLine") {
             this->addLine();
+            continue;
         }
 
         QStringList l = name.split("=");
@@ -123,10 +121,9 @@ void SlothPlacesPanel::addItem(const QString &text, const QString &path, const Q
 void SlothPlacesPanel::addLine() {
     QFrame *line;
     line = new QFrame(this);
-    line->setObjectName(QString::fromUtf8("line"));
+    line->setObjectName("__LINE__");
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
-    line->setObjectName("__LINE__");
 
     this->layout->insertWidget(this->layout->count() - 1, line);
 }

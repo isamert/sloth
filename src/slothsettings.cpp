@@ -58,7 +58,7 @@ void SlothSettings::loadListViewValues(QListView *view) {
 
     QSize iconSize = settings.value("iconSize", QSize(48, 48)).toSize();
     view->setIconSize(iconSize);
-    view->setGridSize(QSize(iconSize.width() + 48, iconSize.height() + 48));
+    view->setGridSize(QSize(iconSize.width() + 52, iconSize.height() + 27));
     settings.endGroup();
 }
 
@@ -73,13 +73,18 @@ void SlothSettings::saveListViewValues(QListView *view) {
 QStringList SlothSettings::defaultPlaces() {
     //name=path=iconName
     QStringList list;
-    list << QObject::trUtf8("Home") + "=" + QDir::homePath() + "=go-home";
-    list << QObject::trUtf8("Desktop") + "=" + SlothPlacesBox::getDesktopLocation() + "=desktop";
-    list << QObject::trUtf8("Documents") + "=" + SlothPlacesBox::getDocumentsLocationn() + "=documents";
-    list << QObject::trUtf8("Downloads") + "=" + SlothPlacesBox::getDownloadLocation()+ "=downloads";
-    list << QObject::trUtf8("Music") + "=" + SlothPlacesBox::getMusicLocation()+ "=music";
-    list << QObject::trUtf8("Pictures") + "=" + SlothPlacesBox::getPicturesLocation() + "=pictures";
-    list << QObject::trUtf8("Movies") + "=" + SlothPlacesBox::getMoviesLocation() + "=movies";
+    list << QObject::trUtf8("Home") + "=" + QDir::homePath() + "=folder-home";
+    list << QObject::trUtf8("Desktop") + "=" + SlothPlacesBox::getDesktopLocation() + "=folder-open";
+    list << QObject::trUtf8("Public") + "=" + SlothPlacesBox::getPublicShareLocation()+ "=folder-publicshare";
+    list << QObject::trUtf8("Documents") + "=" + SlothPlacesBox::getDocumentsLocationn() + "=folder-documents";
+    list << QObject::trUtf8("Downloads") + "=" + SlothPlacesBox::getDownloadLocation()+ "=folder-downloads";
+    list << QObject::trUtf8("Music") + "=" + SlothPlacesBox::getMusicLocation()+ "=folder-music";
+    list << QObject::trUtf8("Pictures") + "=" + SlothPlacesBox::getPicturesLocation() + "=folder-pictures";
+    list << QObject::trUtf8("Videos") + "=" + SlothPlacesBox::getMoviesLocation() + "=folder-videos";
+    list << "addLine";
+    list << QObject::trUtf8("Applications") + "=" + SlothPlacesBox::getApplicationsLocation()[0] + "=folder-system";
+    list << QObject::trUtf8("Trash") + "=" + "__TRASH__" + "=user-trash";
+
     return list;
 }
 

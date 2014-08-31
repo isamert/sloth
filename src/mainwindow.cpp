@@ -37,6 +37,7 @@ void MainWindow::loadToolbar() {
     this->toolbar = new QToolBar();
     this->toolbar->setMovable(false);
     this->toolbar->setContextMenuPolicy(Qt::CustomContextMenu);
+    //this->gridLayout->addWidget(this->toolbar, 0, 0, 1, 1);
     this->addToolBar(Qt::TopToolBarArea, toolbar);
     this->setUnifiedTitleAndToolBarOnMac(true);
 
@@ -89,7 +90,7 @@ void MainWindow::loadPanels() {
 
 void MainWindow::loadTabWidget() {
     this->tabWidget = new SlothTabWidget(this->centralWidget());
-    this->gridLayout->addWidget(this->tabWidget, 0, 0, 1, 1);
+    this->gridLayout->addWidget(this->tabWidget, 1, 0, 1, 1);
     connect(this->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(handleCurrentTabChange(int)));
     connect(this->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(handleTabCloseRequest(int)));
 }

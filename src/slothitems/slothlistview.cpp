@@ -24,9 +24,11 @@ void SlothListView::loadSettings() {
     SlothSettings::loadListViewValues(this);
     this->setSelectionMode(QAbstractItemView::ExtendedSelection);
     this->setContextMenuPolicy(Qt::CustomContextMenu);
-    this->setUniformItemSizes(true);
+    //this->setUniformItemSizes(true);
+    this->setLayoutMode(QListView::Batched);
     this->setResizeMode(QListView::Adjust);
     this->setSelectionRectVisible(true);
+    //this->setFlow(QListView::LeftToRight);
     this->setWrapping(true);
 
     //fsm:
@@ -134,9 +136,8 @@ QStringList SlothListView::getCurrentSelectedPaths() {
     QStringList list;
     QModelIndexList indexes = this->selectionModel()->selectedIndexes();
     foreach(QModelIndex index, indexes) {
-        list << FileUtils::combine(this->sfsm->rootPath(), index.data(Qt::DisplayRole).toString());
-        //list << this->fsm->fileInfo(index).absoluteFilePath().toUtf8();
-        //WTF: //FIXME:? this commented code has problems with utf-8 chars, but only here
+        list << this->sfsm->fileInfo(index).absoluteFilePath();
+        //FIXME:? this code has problems with utf-8 chars, but only here
     }
     return list;
 }
@@ -328,11 +329,11 @@ void SlothListView::onCustomContextMenu(const QPoint &point) {
             QMenu *openWith = menu.addMenu(trUtf8("Open with..."));
 
             if(mime.startsWith("text/"))
-                openWith->addAction(Quick::getIcon("open-here"), trUtf8("Open here"), this, SLOT(emitTextEditRequested()));
+                openWith->addAction(Quick::getIcon("document-open"), trUtf8("Open here"), this, SLOT(emitTextEditRequested()));
             else if(SlothFileEditor::getSupportedMimeTypes().contains(mime))
-                openWith->addAction(Quick::getIcon("open-here"), trUtf8("Open here"), this, SLOT(emitTextEditRequested()));
+                openWith->addAction(Quick::getIcon("document-open"), trUtf8("Open here"), this, SLOT(emitTextEditRequested()));
             else if(mime.startsWith("image/"))
-                openWith->addAction(Quick::getIcon("open-here"), trUtf8("Open here"), this, SLOT(emitImageViewerRequested()));
+                openWith->addAction(Quick::getIcon("document-open"), trUtf8("Open here"), this, SLOT(emitImageViewerRequested()));
 
             DesktopFile df;
             foreach (QString desktopFilePath, df.getDesktopFileFromMimeInfo(mime)) {
