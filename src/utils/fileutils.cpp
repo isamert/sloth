@@ -343,19 +343,19 @@ bool FileUtils::openDetached(const QString &path) {
 }
 
 QString FileUtils::formatFileSize(const qint64 fileSize) {
-    const int KB = 1024; // Kilobyte
-    const int MB = 1024 * KB; // Megabyte
-    const int GB = 1024 * MB; // Gigabyte
+    const double KB = 1024.0; // Kilobyte
+    const double MB = 1024.0 * KB; // Megabyte
+    const double GB = 1024.0 * MB; // Gigabyte
 
     QString result;
     if(fileSize < KB)
         result = QString::number(fileSize) + " B";
     else if(fileSize < MB)
-        result = QString::number(fileSize / KB) + " KB";
+        result = QString::number(fileSize / KB, 'f', 2) + " KB";
     else if(fileSize < GB)
-        result = QString::number(fileSize / MB) + " MB";
+        result = QString::number(fileSize / MB, 'f', 2) + " MB";
     else if(fileSize >= GB)
-        result = QString::number(fileSize / GB) + " GB";
+        result = QString::number(fileSize / GB, 'f', 2) + " GB";
 
     return result;
 }

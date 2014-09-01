@@ -21,11 +21,13 @@ public:
     SlothCopier *sc;
 
     static bool hasFiles();
+    static QStringList getFiles();
 
     static bool pasteImage(const QString &pathToPaste);
     static bool pasteText(const QString &pathToPaste);
     bool pasteFiles(const QString &pathToPaste);
     bool paste(const QString &pathToPaste);
+
 
 
 signals:

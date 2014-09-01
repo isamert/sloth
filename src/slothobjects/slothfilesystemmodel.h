@@ -12,7 +12,6 @@ class SlothFileSystemModel : public QFileSystemModel
     Q_OBJECT
 
 private:
-    QStringList supportedImageFormats;
     QSize iconSize;
     bool thumbnailsEnabled;
 
@@ -24,6 +23,8 @@ public:
     void setThumbnailsEnabled(bool enabled);
     bool isThumbnailsEnabled();
 
+    void setIconSize(const QSize &size);
+    QSize getIconSize();
 signals:
 
 public slots:

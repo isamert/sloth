@@ -4,11 +4,8 @@ SlothFileSystemModel::SlothFileSystemModel(QObject *parent, const QSize &iconSiz
     QFileSystemModel(parent)
 {
     this->desktopFile = new DesktopFile(this);
-
     this->iconSize = iconSize;
-
-    this->thumbnailsEnabled = true; //FIXME = false yap
-    this->supportedImageFormats << "png" << "jpg" << "jpeg" << "gif" << "svg";
+    this->thumbnailsEnabled = true; //FIXME: = false yap
 }
 
 void SlothFileSystemModel::setThumbnailsEnabled(bool enabled) {
@@ -17,6 +14,14 @@ void SlothFileSystemModel::setThumbnailsEnabled(bool enabled) {
 
 bool SlothFileSystemModel::isThumbnailsEnabled() {
     return this->thumbnailsEnabled;
+}
+
+void SlothFileSystemModel::setIconSize(const QSize &size) {
+    this->iconSize = size;
+}
+
+QSize SlothFileSystemModel::getIconSize() {
+    return this->iconSize;
 }
 
 QVariant SlothFileSystemModel::data(const QModelIndex & index, int role) const {
@@ -44,10 +49,10 @@ QVariant SlothFileSystemModel::data(const QModelIndex & index, int role) const {
     }
 
     if(role == Qt::DecorationRole) {
-        if(this->thumbnailsEnabled && this->supportedImageFormats.contains(suffix)) {
+        if(this->thumbnailsEnabled && FileUtils::getMimeType(fullFilePath).startsWith("image/")) {
 
             if(info.size() < 51200) // 1024 * 50 (50KB) doesn't need to cache.
-                return QPixmap(info.absoluteFilePath()).scaled(this->iconSize, Qt::KeepAspectRatioByExpanding);
+                return QPixmap(info.absoluteFilePath()).scaled(this->iconSize);
 
             QIcon icon = this->thumbnailCache->getFromCache(fullFilePath, this->iconSize);
 

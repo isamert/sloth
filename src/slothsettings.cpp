@@ -56,7 +56,7 @@ void SlothSettings::loadListViewValues(QListView *view) {
     settings.beginGroup("SlothListView");
     view->setViewMode(static_cast<QListView::ViewMode>(settings.value("viewMode", QListView::IconMode).toUInt()));
 
-    QSize iconSize = settings.value("iconSize", QSize(48, 48)).toSize();
+    QSize iconSize = settings.value("iconSize", QSize(64, 64)).toSize();
     view->setIconSize(iconSize);
     view->setGridSize(QSize(iconSize.width() + 52, iconSize.height() + 27));
     settings.endGroup();

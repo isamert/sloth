@@ -26,6 +26,17 @@ bool Clipboard::hasFiles() {
     return hasFiles;
 }
 
+QStringList Clipboard::getFiles() {
+    //must call hasFiles before
+
+    const QClipboard *clipboard = QApplication::clipboard();
+    const QMimeData *mimeData = clipboard->mimeData();
+
+    QStringList listFiles = mimeData->text().split("\n");
+
+    return listFiles;
+}
+
 bool Clipboard::pasteImage(const QString &pathToPaste) {
     const QClipboard *clipboard = QApplication::clipboard();
     const QMimeData *mimeData = clipboard->mimeData();

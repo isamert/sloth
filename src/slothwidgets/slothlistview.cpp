@@ -24,7 +24,7 @@ void SlothListView::loadSettings() {
     SlothSettings::loadListViewValues(this);
     this->setSelectionMode(QAbstractItemView::ExtendedSelection);
     this->setContextMenuPolicy(Qt::CustomContextMenu);
-    this->setUniformItemSizes(true);
+    //this->setUniformItemSizes(true);
     this->setLayoutMode(QListView::Batched);
     this->setResizeMode(QListView::Adjust);
     //this->setSelectionRectVisible(true);
@@ -35,6 +35,7 @@ void SlothListView::loadSettings() {
     this->sfsm = new SlothFileSystemModel(this);
     this->sfsm->setFilter(QDir::AllEntries | QDir::NoDotAndDotDot);
     this->sfsm->setNameFilterDisables(false);
+    this->sfsm->setIconSize(this->iconSize());
     this->setModel(this->sfsm);
 }
 
@@ -207,6 +208,7 @@ void SlothListView::onCurrentIndexChange(const QModelIndex &current, const QMode
 }
 
 void SlothListView::onSelectionChange(const QItemSelection &selected, const QItemSelection &deselected) {
+    //FIXME: find a faster/better way to calculate this --->use arguments  ^^^^            ^^^^^
     QStringList mlist = this->getCurrentSelectedPaths();
     QString status = "";
 
@@ -229,7 +231,7 @@ void SlothListView::onSelectionChange(const QItemSelection &selected, const QIte
         }
         else if(info.isDir()) {
             totalDir += 1;
-            totalCount += QDir(info.absoluteFilePath()).entryList().count() - 2;
+            totalCount += QDir(info.absoluteFilePath()).count();
         }
     }
 
@@ -534,8 +536,24 @@ void SlothListView::newFolder() {
 
 void SlothListView::paste() {
     if(this->clipboard->hasFiles()) {
+        QFile file(Utils::getTempFile());
 
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QStringList templist = QString(file.readAll()).split('\n');
+
+            if(templist == this->clipboard->getFiles()) {
+                foreach (QString item, templist) {
+                    QString newPath = FileUtils::combine(this->getCurrentDir(), FileUtils::getName(item));
+                    FileUtils::moveItem(item, newPath);
+                    //FIXME: cannot move other drives
+                }
+
+                QFile::remove(Utils::getTempFile());
+                qApp->clipboard()->clear();
+                return;
+            }
+        }
     }
-
     this->clipboard->paste(this->getCurrentDir());
+    qApp->clipboard()->clear();
 }

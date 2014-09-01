@@ -37,8 +37,15 @@ QStringList Utils::getDrives() {
     return mountpoints;
 }
 
+QString Utils::getCacheDir() {
+    QString path = FileUtils::combine(QDir::homePath(), ".cache/sloth");
+    if(QFile::exists(path))
+        QDir::root().mkdir(path);
+    return path;
+}
+
 QString Utils::getTempFile() {
-    return FileUtils::combine(QDir::tempPath(), "sloth-temp.temp");
+    return FileUtils::combine(getCacheDir(), "temp.temp");
 }
 
 int Utils::ramdomInt(int low, int high) {
@@ -50,7 +57,7 @@ QString Utils::randomString(int charlen) {
     static QString alphanumeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     for (int i = 0; i < charlen; ++i)
-        str[i] = alphanumeric[qrand() % (alphanumeric.count() - 1)];
+        str[i] = alphanumeric[rand() / (RAND_MAX / alphanumeric.count())]; //it's hard to get a really random thing
 
     return str;
 }

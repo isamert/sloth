@@ -15,6 +15,8 @@ SlothInfoPanel::SlothInfoPanel(QWidget *parent) :
 
     this->setWindowTitle(trUtf8("Information"));
     ui->lblImage->setFixedHeight(128);
+    ui->lblFileName->setMaximumWidth(this->width());
+    ui->lblType->setMaximumWidth(this->width() - ui->tType->width());
 
     this->filePath = "";
 }
@@ -75,7 +77,7 @@ void SlothInfoPanel::setInfo(const QFileInfo &info, bool showDirSize /* = false 
     if(mime.contains("image")) {
         try { // maybe qt cannot read this image file
             QPixmap pm(info.absoluteFilePath());
-            pixmap = pm.scaled(QSize(128, 128), Qt::KeepAspectRatioByExpanding);
+            pixmap = pm.scaled(QSize(128, 128), Qt::IgnoreAspectRatio);
         }
         catch (...) {
             pixmap = iconProv.icon(info).pixmap(QSize(128, 128));

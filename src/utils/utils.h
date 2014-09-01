@@ -21,7 +21,10 @@ public:
     static bool checkIfCommandExists(const QString &currentPath);
     static QStringList mimeTypesOfArchives();
     static QStringList getDrives();
+
+    static QString getCacheDir();
     static QString getTempFile();
+
     static int ramdomInt(int low, int high);
     static QString randomString(int charlen);
 };

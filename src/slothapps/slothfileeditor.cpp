@@ -3,6 +3,7 @@
 SlothFileEditor::SlothFileEditor(QWidget *parent, const QString &filePath /* = "" */) :
     QWidget(parent)
 {
+    //TODO: add find/replace bar to bottom
     this->loadUi();
 
     if(!filePath.isEmpty())

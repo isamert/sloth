@@ -19,7 +19,8 @@ private:
 public:
     explicit SlothThumbnailCache(QObject *parent = 0);
 
-    QIcon addToCache(const QString &path, const QPixmap &pixmap, const QSize &size);
+    QIcon addToCache(const QString &path, const QPixmap &pixmap, const QSize &size,
+                     Qt::AspectRatioMode aspectRatio = Qt::IgnoreAspectRatio);
     QIcon getFromCache(const QString &path, const QSize &size);
     bool removeFromCache(const QString &path, const QSize &size);
     bool clearCache();
