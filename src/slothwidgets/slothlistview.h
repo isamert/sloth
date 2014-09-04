@@ -24,6 +24,10 @@ class SlothListView : public QListView
 {
     Q_OBJECT
 private:
+    qint64 currentSelectedTotalSize;
+    int currentSelectedTotalDirs;
+    int currentSelectedTotalFiles;
+    int currentSelectedTotalSubFiles;
 
 public:
     explicit SlothListView(QWidget *parent = 0, const QString &path = QDir::homePath());

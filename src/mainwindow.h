@@ -10,6 +10,7 @@
 #include "slothsettings.h"
 #include "slothapps//slothfileeditor.h"
 #include "slothapps/slothimageviewer.h"
+#include "slothwidgets/slothminitermwidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -31,6 +32,7 @@ private:
     //items:
     QToolBar *toolbar;
     QToolBar *filterbar;
+    SlothMinitermWidget *minitermbar;
     QLineEdit *lineFilter;
     QMenuBar *menubar;
     QStatusBar *statusbar;
@@ -54,6 +56,7 @@ private:
     void loadTabWidget();
     void loadPanels();
     void loadFilterBar();
+    void loadMiniTermBar();
 
 public:
     MainWindow(QWidget *parent = 0);

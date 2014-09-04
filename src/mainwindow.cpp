@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->loadMenuBar();
     this->loadPanels();
     this->loadFilterBar();
+    this->loadMiniTermBar();
 
     this->openNewListView();
 }
@@ -111,16 +112,25 @@ void MainWindow::loadFilterBar() {
     connect(lineFilter, SIGNAL(returnPressed()), this, SLOT(onFilterChange()));
 }
 
+void MainWindow::loadMiniTermBar() {
+    this->minitermbar = new SlothMinitermWidget(this);
+    this->gridLayout->addWidget(this->minitermbar, 3, 0, 1, 1);
+    //this->minitermbar->hide();
+
+    connect(this->minitermbar, SIGNAL(openDirRequested(QString)), this, SLOT(openDir(QString)));
+}
+
 bool MainWindow::eventFilter(QObject* obj, QEvent *event) {
     //TODO:(maybe) take every event from slothlistview to here and add treeview, detailview etc...
-    if (obj == this->lineFilter) {
-        if (event->type() == QEvent::KeyPress) {
-            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 
-            if (keyEvent->key() == Qt::Key_Escape || keyEvent->matches(QKeySequence::Find)) {
-                this->showFilterBar();
-                return true;
-            }
+        if (obj == this->lineFilter &&
+                keyEvent->key() == Qt::Key_Escape ||
+                keyEvent->matches(QKeySequence::Find)) {
+
+            this->showFilterBar();
+            return true;
         }
     }
     return QMainWindow::eventFilter(obj, event);
@@ -193,6 +203,7 @@ void MainWindow::handleCurrentPathChange(const QString &path) {
     this->navbar->setPath(path);
     this->pnlInfo->setInfo(path);
     this->pnlPlaces->setCurrentItem(path);
+    this->minitermbar->setWorkingDirectory(path);
 }
 
 void MainWindow::handleCurrentTabChange(int index) {
@@ -214,6 +225,7 @@ void MainWindow::handleCurrentTabChange(int index) {
 
     this->navbar->setPath(currPath);
     this->pnlInfo->setInfo(currPath);
+    this->minitermbar->setWorkingDirectory(currPath);
 }
 
 void MainWindow::onFilterChange() {
@@ -224,6 +236,7 @@ void MainWindow::setEnabledWidgets(bool enabled) {
     this->toolbar->setEnabled(enabled);
     this->pnlPlaces->setEnabled(enabled);
     this->filterbar->setEnabled(enabled);
+    this->minitermbar->setEnabled(enabled);
 
     /*
     this->navbar->setEnabled(enabled);

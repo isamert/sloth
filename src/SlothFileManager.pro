@@ -45,7 +45,8 @@ SOURCES += main.cpp\
     slothwidgets/slothnavigationbar.cpp \
     slothwidgets/slothplacesbox.cpp \
     slothwidgets/slothtabwidget.cpp \
-    slothobjects/sloththumbnailcache.cpp
+    slothobjects/sloththumbnailcache.cpp \
+    slothwidgets/slothminitermwidget.cpp
 
 HEADERS  += mainwindow.h \
     utils/quick.h \
@@ -72,7 +73,8 @@ HEADERS  += mainwindow.h \
     slothwidgets/slothnavigationbar.h \
     slothwidgets/slothplacesbox.h \
     slothwidgets/slothtabwidget.h \
-    slothobjects/sloththumbnailcache.h
+    slothobjects/sloththumbnailcache.h \
+    slothwidgets/slothminitermwidget.h
 
 FORMS += \
     compression/compressiondialog.ui \

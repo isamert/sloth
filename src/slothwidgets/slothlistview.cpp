@@ -7,6 +7,11 @@ SlothListView::SlothListView(QWidget *parent, const QString &path /* = QDir::hom
     this->loadActions();
 
     this->historyCurrent = -1;
+    this->currentSelectedTotalDirs = 0;
+    this->currentSelectedTotalFiles = 0;
+    this->currentSelectedTotalSize = 0;
+    this->currentSelectedTotalSubFiles = 0;
+
 
     connect(this, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onDoubleClicked(QModelIndex)));
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onCustomContextMenu(const QPoint &)));
@@ -112,8 +117,10 @@ void SlothListView::newFileMenuItemClicked(const QString &path) {
         Quick::msgWarning(trUtf8("Error"), trUtf8("Can not create new file from template."));
 }
 
-void SlothListView::openDir(const QString &dir, bool addHistory /* =true */) {
-    this->setRootIndex(this->sfsm->setRootPath(dir));
+void SlothListView::openDir(const QString &dir, bool addHistory /* = true */) {
+    QModelIndex mi = this->sfsm->setRootPath(dir);
+    this->setRootIndex(mi);
+
     if(addHistory) {
         this->historyCurrent += 1;
         this->history.insert(this->historyCurrent, dir);
@@ -151,9 +158,10 @@ QString SlothListView::getCurrentSelectedPath() {
 QStringList SlothListView::getCurrentSelectedPaths() {
     QStringList list;
     QModelIndexList indexes = this->selectionModel()->selectedIndexes();
-    foreach(QModelIndex index, indexes) {
-        list << this->sfsm->fileInfo(index).absoluteFilePath();
-        //FIXME:? this code has problems with utf-8 chars, but only here
+    foreach(const QModelIndex index, indexes) {
+        if(index.column() == 0) {
+            list << this->sfsm->fileInfo(index).absoluteFilePath();
+        }
     }
     return list;
 }
@@ -208,7 +216,56 @@ void SlothListView::onCurrentIndexChange(const QModelIndex &current, const QMode
 }
 
 void SlothListView::onSelectionChange(const QItemSelection &selected, const QItemSelection &deselected) {
-    //FIXME: find a faster/better way to calculate this --->use arguments  ^^^^            ^^^^^
+    foreach (QModelIndex index, deselected.indexes()) {
+        if(index.column() == 0) {
+            QFileInfo info = this->sfsm->fileInfo(index);
+
+            if(info.isFile()) {
+                this->currentSelectedTotalFiles -=1;
+                this->currentSelectedTotalSize -= info.size();
+            }
+            else if(info.isDir()) {
+                this->currentSelectedTotalDirs -= 1;
+                this->currentSelectedTotalSubFiles -= QDir(info.absoluteFilePath()).count() - 2;
+            }
+        }
+
+    }
+
+    foreach (QModelIndex index, selected.indexes()) {
+        if(index.column() == 0) {
+            QFileInfo info = this->sfsm->fileInfo(index);
+
+            if(info.isFile()) {
+                this->currentSelectedTotalFiles +=1;
+                this->currentSelectedTotalSize += info.size();
+            }
+            else if(info.isDir()) {
+                this->currentSelectedTotalDirs += 1;
+                this->currentSelectedTotalSubFiles += QDir(info.absoluteFilePath()).count() - 2;
+            }
+        }
+    }
+
+    if(this->currentSelectedTotalDirs == 0 && this->currentSelectedTotalFiles == 0) {
+        emit this->currentStatusChanged("");
+        return;
+    }
+
+
+    QString status;
+    status = QString(trUtf8("%1 dirs (Contains %2 items), %3 files (%4)"))
+            .arg(this->currentSelectedTotalDirs)
+            .arg(this->currentSelectedTotalSubFiles)
+            .arg(this->currentSelectedTotalFiles)
+            .arg(FileUtils::formatFileSize(this->currentSelectedTotalSize));
+
+
+    emit this->currentStatusChanged(status);
+
+
+    /* this is a slower method, maybe not. i dont know. */
+    /*
     QStringList mlist = this->getCurrentSelectedPaths();
     QString status = "";
 
@@ -242,6 +299,7 @@ void SlothListView::onSelectionChange(const QItemSelection &selected, const QIte
         status = "";
 
     emit this->currentStatusChanged(status);
+    */
 }
 
 
@@ -318,14 +376,14 @@ void SlothListView::keyPressEvent(QKeyEvent *event) {
         return;
     }
 
-    event->accept();
+    QListView::keyPressEvent(event);
 }
 
 void SlothListView::onCustomContextMenu(const QPoint &point) {
     QModelIndex index = this->indexAt(point);
     if (index.isValid()) { //when clicked on items
         //FIXME:
-        QFileInfo info(this->sfsm->fileInfo(index).absoluteFilePath());
+        QFileInfo info = this->sfsm->fileInfo(index);
         QString mime = FileUtils::getMimeType(info.absoluteFilePath());
         QMenu menu;
 
@@ -554,6 +612,7 @@ void SlothListView::paste() {
             }
         }
     }
+
     this->clipboard->paste(this->getCurrentDir());
     qApp->clipboard()->clear();
 }

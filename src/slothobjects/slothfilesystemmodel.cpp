@@ -24,7 +24,7 @@ QSize SlothFileSystemModel::getIconSize() {
     return this->iconSize;
 }
 
-QVariant SlothFileSystemModel::data(const QModelIndex & index, int role) const {
+QVariant SlothFileSystemModel::data(const QModelIndex &index, int role) const {
     //FIXME: use a diffrent role to send exec commands
     QFileInfo info = this->fileInfo(index);
     QString fullFilePath = info.absoluteFilePath();

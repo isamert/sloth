@@ -12,7 +12,7 @@ bool Clipboard::hasFiles() {
     const QMimeData *mimeData = clipboard->mimeData();
 
     bool hasFiles = true;
-    if (mimeData->hasText()) {
+    if(mimeData->hasText()) {
         QStringList listFiles = mimeData->text().split("\n");
 
         foreach(QString file, listFiles) {
@@ -23,6 +23,9 @@ bool Clipboard::hasFiles() {
             }
         }
     }
+    else
+        return false;
+
     return hasFiles;
 }
 
@@ -72,7 +75,7 @@ bool Clipboard::pasteText(const QString &pathToPaste) {
     const QClipboard *clipboard = QApplication::clipboard();
     const QMimeData *mimeData = clipboard->mimeData();
 
-    if(!hasFiles()) {
+    if(mimeData->hasText()) {
         bool ok;
         QString fileName = Quick::getText(trUtf8("File name"), trUtf8("New file name:"), &ok);
 
@@ -103,7 +106,7 @@ bool Clipboard::pasteText(const QString &pathToPaste) {
 bool Clipboard::pasteFiles(const QString &pathToPaste) {
     const QClipboard *clipboard = QApplication::clipboard();
     const QMimeData *mimeData = clipboard->mimeData();
-    bool result = true;
+    bool result = false;
 
     if(hasFiles()) {
         QStringList listFiles = mimeData->text().split("\n");
@@ -117,6 +120,7 @@ bool Clipboard::pasteFiles(const QString &pathToPaste) {
                 newPath = FileUtils::combine(pathToPaste, FileUtils::getName(file));
 
             sc->copier->copy(file, newPath);
+            result = true;
             //result = FileUtils::copyRecursively(file, newPath);
 
             if(!result)
@@ -127,9 +131,8 @@ bool Clipboard::pasteFiles(const QString &pathToPaste) {
 }
 
 bool Clipboard::paste(const QString &pathToPaste) {
-    if(pasteFiles(pathToPaste) ||  pasteText(pathToPaste) || pasteImage(pathToPaste)) {
+    if(pasteFiles(pathToPaste) ||  pasteText(pathToPaste) || pasteImage(pathToPaste))
         return true;
-    }
     return false;
 }
 
