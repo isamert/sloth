@@ -19,7 +19,7 @@ class ClickableLabel : public QLabel
 public:
     explicit ClickableLabel(QWidget *parent = 0, const QString &text = "", bool effect = false);
     bool effect;
-    void setEffect(bool effect);
+    void setEffectEnabled(bool effect);
 
 signals:
     void clicked();

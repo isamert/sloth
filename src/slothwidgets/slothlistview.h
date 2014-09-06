@@ -9,7 +9,7 @@
 #include <QtGui>
 #endif
 
-#include <QtConcurrent>
+#include <QtConcurrentRun>
 
 #include "compression/compressiondialog.h"
 #include "utils/fileutils.h"
@@ -108,6 +108,10 @@ private slots:
     void newFileMenuItemClicked(const QString &path);
     void emitTextEditRequested();
     void emitImageViewerRequested();
+
+public slots:
+    void setViewModeToIconMode();
+    void setViewModeToListMode();
 
 signals:
     void currentPathChanged(const QString &currentPath);

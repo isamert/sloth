@@ -23,7 +23,8 @@ private:
 public:
     explicit DesktopFile(QObject *parent = 0, const QString &filePath = "");
 
-    static QStringList getDesktopFileFromMimeInfo(const QString &mimeType);
+    static QString getDefaultDesktopFileFromMimeInfo(const QString &mimeType);
+    static QStringList getDesktopFilesFromMimeInfo(const QString &mimeType);
 
     void setPath(const QString &filePath);
     bool load();
@@ -33,7 +34,6 @@ public:
     QString getExec();
 
     void clear();
-
 
 signals:
 

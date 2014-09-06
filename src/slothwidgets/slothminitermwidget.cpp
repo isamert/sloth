@@ -90,7 +90,6 @@ void SlothMinitermWidget::executeCommand() {
         if(QFile::exists(path)) {
             emit this->openDirRequested(path);
             this->lineMiniterm->clear();
-            return;
         }
     }
     else if(program == "clear") {

@@ -5,11 +5,11 @@ MainWindow::MainWindow(QWidget *parent)
 {
     this->loadWindow();
     this->loadTabWidget();
+    this->loadFilterBar();
+    this->loadMiniTermBar();
     this->loadToolbar();
     this->loadMenuBar();
     this->loadPanels();
-    this->loadFilterBar();
-    this->loadMiniTermBar();
 
     this->openNewListView();
 }
@@ -67,6 +67,45 @@ void MainWindow::loadToolbar() {
     this->navbar = new SlothNavigationBar(this->toolbar, QDir::homePath(), false);
     this->toolbar->addWidget(this->navbar);
 
+    QMenu *menuViewMode;
+    menuViewMode = new QMenu();
+    menuViewMode->addAction(Quick::getIcon("view-list-details"), trUtf8("List View"),
+                            this, SLOT(setViewModeToListMode()));
+    menuViewMode->addAction(Quick::getIcon("view-list-icons"), trUtf8("Icon View"),
+                            this, SLOT(setViewModeToIconMode()));
+    menuViewMode->addSeparator();
+    menuViewMode->addAction(this->actChangeModel);
+
+    QMenu *menuShortcuts;
+    menuShortcuts = new QMenu();
+    menuShortcuts->addAction(Quick::getIcon("terminal"), trUtf8("Mini terminal"),
+                             this->minitermbar, SLOT(showOrHide()));
+    menuShortcuts->addAction(Quick::getIcon("find"), trUtf8("Filter items"),
+                             this, SLOT(showFilterBar()));
+
+    QToolButton *tbViewMode;
+    tbViewMode = new QToolButton();
+    tbViewMode->setFocusPolicy(Qt::NoFocus);
+    tbViewMode->setMenu(menuViewMode);
+    tbViewMode->setPopupMode(QToolButton::InstantPopup);
+    tbViewMode->setIcon(Quick::getIcon("document-properties"));
+
+    QToolButton *tbShortcuts;
+    tbShortcuts = new QToolButton();
+    tbShortcuts->setFocusPolicy(Qt::NoFocus);
+    tbShortcuts->setMenu(menuShortcuts);
+    tbShortcuts->setPopupMode(QToolButton::InstantPopup);
+    tbShortcuts->setIcon(Quick::getIcon("document-properties"));
+
+    QWidgetAction *waViewMode = new QWidgetAction(this->toolbar);
+    waViewMode->setDefaultWidget(tbViewMode);
+
+    QWidgetAction *waShortcuts = new QWidgetAction(this->toolbar);
+    waShortcuts->setDefaultWidget(tbShortcuts);
+
+    this->toolbar->addAction(waViewMode);
+    this->toolbar->addAction(waShortcuts);
+
     connect(this->actBack, SIGNAL(triggered()), this, SLOT(goBack()));
     connect(this->actForward, SIGNAL(triggered()), this, SLOT(goForward()));
     connect(this->actUp, SIGNAL(triggered()), this, SLOT(goUp()));
@@ -115,7 +154,7 @@ void MainWindow::loadFilterBar() {
 void MainWindow::loadMiniTermBar() {
     this->minitermbar = new SlothMinitermWidget(this);
     this->gridLayout->addWidget(this->minitermbar, 3, 0, 1, 1);
-    //this->minitermbar->hide();
+    this->minitermbar->hide();
 
     connect(this->minitermbar, SIGNAL(openDirRequested(QString)), this, SLOT(openDir(QString)));
 }
@@ -126,8 +165,8 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 
         if (obj == this->lineFilter &&
-                keyEvent->key() == Qt::Key_Escape ||
-                keyEvent->matches(QKeySequence::Find)) {
+                (keyEvent->key() == Qt::Key_Escape ||
+                keyEvent->matches(QKeySequence::Find))) {
 
             this->showFilterBar();
             return true;
@@ -171,6 +210,14 @@ QString MainWindow::getCurrentDir() {
 
 QString MainWindow::getCurrentIndexFile() {
     return this->currentSlothListView()->getCurrentSelectedPath();
+}
+
+void MainWindow::setViewModeToListMode() {
+    this->currentSlothListView()->setViewModeToListMode();
+}
+
+void MainWindow::setViewModeToIconMode() {
+    this->currentSlothListView()->setViewModeToIconMode();
 }
 
 void MainWindow::changeModel() {

@@ -36,7 +36,7 @@ void SlothListView::loadSettings() {
     //this->setFlow(QListView::LeftToRight);
     this->setWrapping(true);
 
-    //fsm:
+    //sfsm:
     this->sfsm = new SlothFileSystemModel(this);
     this->sfsm->setFilter(QDir::AllEntries | QDir::NoDotAndDotDot);
     this->sfsm->setNameFilterDisables(false);
@@ -115,6 +115,15 @@ void SlothListView::newFileMenuItemClicked(const QString &path) {
     QString newPath = FileUtils::combine(this->getCurrentDir(), FileUtils::getName(path));
     if(!QFile::copy(path, newPath))
         Quick::msgWarning(trUtf8("Error"), trUtf8("Can not create new file from template."));
+}
+
+void SlothListView::setViewModeToIconMode() {
+    this->setViewMode(QListView::IconMode);
+}
+
+void SlothListView::setViewModeToListMode() {
+    //FIXME:
+    this->setViewMode(QListView::ListMode);
 }
 
 void SlothListView::openDir(const QString &dir, bool addHistory /* = true */) {
@@ -334,6 +343,10 @@ void SlothListView::keyPressEvent(QKeyEvent *event) {
             this->rename();
             return;
         }
+        else if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
+            this->onDoubleClicked(this->selectionModel()->currentIndex());
+            return;
+        }
         else if(event->matches(QKeySequence::Copy)) {
             this->copy();
             return;
@@ -414,7 +427,7 @@ void SlothListView::onCustomContextMenu(const QPoint &point) {
                 openWith->addAction(Quick::getIcon("document-open"), trUtf8("Open here"), this, SLOT(emitImageViewerRequested()));
 
             DesktopFile df;
-            foreach (QString desktopFilePath, df.getDesktopFileFromMimeInfo(mime)) {
+            foreach (QString desktopFilePath, df.getDesktopFilesFromMimeInfo(mime)) {
                 df.setPath(desktopFilePath);
 
                 if(df.load()) {

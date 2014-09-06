@@ -10,11 +10,34 @@ void DesktopFile::setPath(const QString &filePath) {
     this->desktopFile = filePath;
 }
 
-QStringList DesktopFile::getDesktopFileFromMimeInfo(const QString &mimeType) {
+QString DesktopFile::getDefaultDesktopFileFromMimeInfo(const QString &mimeType) {
+    QStringList defaults;
+    defaults << "/usr/share/applications/defaults.list";
+    //TODO: add local/share/applications/mimeapps.list --> [Default Applications]
+
+    foreach(QString pdefault, defaults) {
+        QFile file(pdefault);
+
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            return QString();
+
+        QTextStream ts(&file);
+        while (!ts.atEnd()) {
+            QStringList line = ts.readLine().trimmed().split("=");
+            if(line[0] == mimeType) {
+                file.close();
+                return FileUtils::combine(FileUtils::getUpperPath(pdefault), line[1]);
+            }
+        }
+        file.close();
+    }
+}
+
+QStringList DesktopFile::getDesktopFilesFromMimeInfo(const QString &mimeType) {
     QStringList mimeInfos;
     mimeInfos << "/usr/share/applications/mimeinfo.cache";
-    mimeInfos << FileUtils::combine(QDir::homePath(), "/.local/share/applications/mimeinfo.cache");
-    mimeInfos << FileUtils::combine(QDir::homePath(), "/.local/share/applications/mimeapps.list");
+    mimeInfos << FileUtils::combine(QDir::homePath(), ".local/share/applications/mimeinfo.cache");
+    mimeInfos << FileUtils::combine(QDir::homePath(), ".local/share/applications/mimeapps.list");
 
     foreach (QString mimeInfo, mimeInfos) {
         QFile file(mimeInfo);
@@ -37,6 +60,7 @@ QStringList DesktopFile::getDesktopFileFromMimeInfo(const QString &mimeType) {
                 return desktopFiles;
             }
         }
+        file.close();
     }
     return QStringList();
 }
@@ -87,9 +111,8 @@ QString DesktopFile::getName() {
 
 QIcon DesktopFile::getIcon() {
     if(!this->icon.isEmpty()) {
-        if(QIcon::hasThemeIcon(this->icon)) {
+        if(QIcon::hasThemeIcon(this->icon))
             return QIcon::fromTheme(this->icon);
-        }
         else if(QFile::exists(this->icon))
             return QIcon(this->icon);
         else {

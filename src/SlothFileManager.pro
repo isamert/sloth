@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 
-QT        += gui core concurrent
+QT        += gui core concurrent multimedia
 #QT       += core
 #QT       += gui
 #QT       += concurrent

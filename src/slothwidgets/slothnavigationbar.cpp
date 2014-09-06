@@ -1,7 +1,8 @@
 #include "slothwidgets/slothnavigationbar.h"
 
 ClickableLabel::ClickableLabel(QWidget *parent /* = 0 */,
-                               const QString &text /* = "" */, bool effect /* = false */ ) :
+                               const QString &text /* = "" */,
+                               bool effect /* = false */ ) :
     QLabel(parent)
 {
     this->setText(text);
@@ -12,7 +13,7 @@ ClickableLabel::ClickableLabel(QWidget *parent /* = 0 */,
 }
 
 
-void ClickableLabel::setEffect(bool effect) {
+void ClickableLabel::setEffectEnabled(bool effect) {
     this->effect = effect;
 }
 
@@ -66,62 +67,69 @@ void SlothNavigationBar::setPath(const QString &path) {
 }
 
 void SlothNavigationBar::setPathToBarModel(const QString &path) {
-    //TODO: instead of deleting all items, add/remove new ones if neccesary
     this->clearItems();
+    this->setLayout(new QHBoxLayout);
+    this->layout()->setSpacing(5);
+    this->layout()->setMargin(0);
 
     QString strHome = QDir::homePath();
-    QString npath = QDir::toNativeSeparators(path);
+    QString npath = QDir::cleanPath(path);
 
     if(npath.startsWith(strHome))
         npath = npath.replace(strHome, "__HOME__");
 
     QStringList paths = npath.split('/');
-
-    this->setLayout(new QHBoxLayout);
-    this->layout()->setSpacing(4);
-    this->layout()->setMargin(0);
-
     QString currentPath = "";
-    foreach (QString path, paths) {
-        if(path != "") {
-            ClickableLabel *lblPath;
-            lblPath = new ClickableLabel(this);
-            lblPath->setEffect(true);
 
+    foreach (QString lpath, paths) {
+        if(lpath == "")
+            continue;
+
+        ClickableLabel *lblPath;
+        lblPath = new ClickableLabel(this);
+        lblPath->setEffectEnabled(true);
+
+        if(lpath == "__HOME__") {
+            currentPath += strHome;
+
+            lblPath->setText(trUtf8("HOME"));
+            lblPath->setPixmap(Quick::getIcon("go-home").pixmap(32, 32));
+            lblPath->setEffectEnabled(false);
+        }
+        else {
+            currentPath += QDir::separator() + lpath;
+
+            if(lpath.count() > 20)
+                lblPath->setText(lpath.remove(20, lpath.count() - 20) + "...");
+            else
+                lblPath->setText(lpath);
+        }
+
+        lblPath->setToolTip(currentPath);
+        this->layout()->addWidget(lblPath);
+
+        if(QDir::cleanPath(currentPath) != QDir::cleanPath(path)) {
             ClickableLabel *lblSeparator;
             lblSeparator = new ClickableLabel(this);
-
-            if(path == "__HOME__") {
-                currentPath += strHome;
-
-                lblPath->setText(trUtf8("HOME"));
-                lblPath->setPixmap(Quick::getIcon("go-home").pixmap(32, 32));
-                lblPath->setEffect(false);
-            }
-            else {
-                currentPath += "/" + path;
-                if(path.count() > 20) {
-                    lblPath->setText(path.remove(20, path.count() - 20) + "...");
-                }
-                else
-                    lblPath->setText(path);
-            }
-
-            lblPath->setToolTip(currentPath);
             lblSeparator->setToolTip(currentPath);
             lblSeparator->setText("<b>></b>");
 
-            this->layout()->addWidget(lblPath);
             this->layout()->addWidget(lblSeparator);
-
-            connect(lblPath, SIGNAL(clicked()), this->signalMapper, SLOT(map()));
             connect(lblSeparator, SIGNAL(clicked()), this->signalMapper, SLOT(map()));
-            this->signalMapper->setMapping(lblPath, currentPath);
             this->signalMapper->setMapping(lblSeparator, "__COMPLETER__" + currentPath);
-
-            connect(lblPath, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showMenu(QPoint)));
         }
+
+
+        connect(lblPath, SIGNAL(clicked()), this->signalMapper, SLOT(map()));
+        this->signalMapper->setMapping(lblPath, currentPath);
+
+
+        connect(lblPath, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showMenu(QPoint)));
     }
+
+    QWidget *spacer = new QWidget(this);
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    this->layout()->addWidget(spacer);
 }
 
 void SlothNavigationBar::clearItems() {
@@ -187,7 +195,6 @@ void SlothNavigationBar::openClickedDir(const QString &path) {
         QPoint pos = QPoint(QCursor::pos().x(), this->mapToGlobal(this->pos()).y() + this->height());
 
         connect(menu, SIGNAL(aboutToHide()), menu, SLOT(deleteLater())); //to avoiding memory leak
-                                                                         //i'm not sure it's working
         menu->exec(pos);
     }
     else {

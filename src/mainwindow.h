@@ -72,6 +72,10 @@ private slots:
     void goForward();
     void goUp();
 
+    //
+    void setViewModeToListMode();
+    void setViewModeToIconMode();
+
     //update:
     void handleCurrentPathChange(const QString &path);
     void handleCurrentTabChange(int index);

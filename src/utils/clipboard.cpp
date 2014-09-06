@@ -1,5 +1,4 @@
 #include "utils/clipboard.h"
-#include <QtConcurrent>
 
 Clipboard::Clipboard(QObject *parent) :
     QObject(parent)
