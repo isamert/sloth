@@ -15,8 +15,9 @@ SlothInfoPanel::SlothInfoPanel(QWidget *parent) :
 
     this->setWindowTitle(trUtf8("Information"));
     ui->lblImage->setFixedHeight(128);
-    ui->lblFileName->setMaximumWidth(this->width());
-    ui->lblType->setMaximumWidth(this->width() - ui->tType->width());
+    ui->lblFileName->setMaximumWidth(this->width() - 10);
+    ui->lblType->setMaximumWidth(this->width() - ui->tType->width() - 10);
+    ui->lblModified->setMaximumWidth(this->width() - ui->tModified->width() - 10);
 
     this->filePath = "";
 }
