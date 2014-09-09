@@ -109,7 +109,8 @@ void MainWindow::loadToolbar() {
     connect(this->actBack, SIGNAL(triggered()), this, SLOT(goBack()));
     connect(this->actForward, SIGNAL(triggered()), this, SLOT(goForward()));
     connect(this->actUp, SIGNAL(triggered()), this, SLOT(goUp()));
-    connect(this->navbar, SIGNAL(barItemClicked(QString)), this, SLOT(openDir(QString)));
+    connect(this->navbar, SIGNAL(openPathRequested(QString)), this, SLOT(openDir(QString)));
+    connect(this->navbar, SIGNAL(openPathInNewTabRequested(QString)), this, SLOT(openNewListView(QString)));
     connect(this->toolbar, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(handleCustomContextMenu(QPoint)));
 }
 

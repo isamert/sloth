@@ -45,7 +45,7 @@ private:
     QLineEdit *linePath;
     QCompleter *completer;
 
-    QString lastCopyItem;
+    QString currentRightClickItem;
 
     bool useLineModel;
 
@@ -61,7 +61,9 @@ public:
     void changeModel();
 
 signals:
-    void barItemClicked(const QString &path);
+    void openPathRequested(const QString &path);
+    void openPathInNewTabRequested(const QString &path);
+
 
 public slots:
 
@@ -70,6 +72,7 @@ private slots:
     void openFromLineEdit();
     void showMenu(const QPoint &pos);
     void copyPathToClipboard();
+    void openPathInNewTab();
 
 
 

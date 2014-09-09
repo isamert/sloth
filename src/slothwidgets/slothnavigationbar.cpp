@@ -203,7 +203,7 @@ void SlothNavigationBar::openClickedDir(const QString &path) {
         if(info.isFile())
             FileUtils::openDetached(path);
         else
-            emit this->barItemClicked(path);
+            emit this->openPathRequested(path);
     }
 }
 
@@ -213,18 +213,23 @@ void SlothNavigationBar::openFromLineEdit() {
     if(info.isFile())
         FileUtils::openDetached(this->linePath->text());
     else
-        emit this->barItemClicked(this->linePath->text());
+        emit this->openPathRequested(this->linePath->text());
 }
 
 void SlothNavigationBar::showMenu(const QPoint &pos) {
     ClickableLabel* sender = static_cast<ClickableLabel*>(QObject::sender());
-    this->lastCopyItem = sender->toolTip();
+    this->currentRightClickItem = sender->toolTip();
 
     QMenu menu;
     menu.addAction(trUtf8("Copy"), this, SLOT(copyPathToClipboard()));
+    menu.addAction(trUtf8("Open in new tab"), this, SLOT(openPathInNewTab()));
     menu.exec(sender->mapToGlobal(pos));
 }
 
 void SlothNavigationBar::copyPathToClipboard() {
-    qApp->clipboard()->setText(this->lastCopyItem);
+    qApp->clipboard()->setText(this->currentRightClickItem);
+}
+
+void SlothNavigationBar::openPathInNewTab() {
+    emit this->openPathInNewTabRequested(this->currentRightClickItem);
 }
