@@ -44,12 +44,13 @@ SlothNavigationBar::SlothNavigationBar(QWidget *parent, const QString &path /* =
     QWidget(parent)
 {
     this->useLineModel = useLineModel;
-    if(this->useLineModel) {
+
+    if(this->useLineModel)
         this->loadLineModel();
-    }
 
     this->completer = new QCompleter(this);
     this->completer->setModel(new QDirModel(this->completer));
+    //FIXME: using QDirModel because QFileSystemModel has some issues with QCompleter
 
     this->signalMapper = new QSignalMapper(this);
     connect(signalMapper, SIGNAL(mapped(const QString &)), this, SLOT(openClickedDir(const QString &)));
@@ -58,12 +59,11 @@ SlothNavigationBar::SlothNavigationBar(QWidget *parent, const QString &path /* =
 
 void SlothNavigationBar::setPath(const QString &path) {
     this->currentPath = path;
-    if(this->useLineModel) {
+
+    if(this->useLineModel)
         this->linePath->setText(path);
-    }
-    else {
+    else
         this->setPathToBarModel(path);
-    }
 }
 
 void SlothNavigationBar::setPathToBarModel(const QString &path) {

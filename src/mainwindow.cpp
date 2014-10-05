@@ -149,7 +149,7 @@ void MainWindow::loadFilterBar() {
 
     this->filterbar->addAction(Quick::getIcon("exit"), trUtf8("Close"), this->filterbar, SLOT(hide()));
 
-    connect(lineFilter, SIGNAL(returnPressed()), this, SLOT(onFilterChange()));
+    connect(lineFilter, SIGNAL(textChanged(QString)), this, SLOT(onFilterChange()));
 }
 
 void MainWindow::loadMiniTermBar() {
@@ -277,7 +277,13 @@ void MainWindow::handleCurrentTabChange(int index) {
 }
 
 void MainWindow::onFilterChange() {
-    this->currentSlothListView()->filterItems(this->lineFilter->text().split("|"));
+    QStringList items = this->lineFilter->text().split("|");
+    for(int i = 0; i < items.count(); ++i) {
+        items[i] += "*";
+        items[i].insert(0, "*");
+    }
+
+    this->currentSlothListView()->filterItems(items);
 }
 
 void MainWindow::setEnabledWidgets(bool enabled) {
